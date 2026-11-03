@@ -5,9 +5,6 @@ internet) on the 100×100 Milano grid with a spatio-temporal **ConvLSTM**. It co
 preprocessing, the model, training with early stopping, evaluation against naive baselines, and
 visualisation.
 
-> **See also:** `PROJECT_OVERVIEW.md` (plain-language explanation) and `PROJECT_REPORT.md`
-> (all findings, the real-data results, and a presentation and Q&A guide).
-
 ---
 
 ## Table of contents
