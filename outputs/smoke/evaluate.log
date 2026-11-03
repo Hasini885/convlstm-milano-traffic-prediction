@@ -1,0 +1,34 @@
+2026-10-28 18:41:17 | INFO | Loaded C:\Users\Roshan\convlstm_milano\outputs\smoke\best_model.pt (epoch 3, val loss 0.000857); 60 test windows on cpu
+2026-10-28 18:41:17 | INFO | model        horizon         RMSE          MAE    MAPE %
+2026-10-28 18:41:17 | INFO | ConvLSTM           1      20.4244      10.4761     40.87
+2026-10-28 18:41:17 | INFO | Persistence        1      19.9476       9.6697     33.61
+2026-10-28 18:41:17 | INFO | WindowMean         1      16.4417       8.0269     28.22
+2026-10-28 18:41:17 | INFO | ConvLSTM     overall  RMSE 20.4244 | MAE 10.4761 | MAPE 40.87%
+2026-10-28 18:41:17 | INFO | Persistence  overall  RMSE 19.9476 | MAE 9.6697 | MAPE 33.61%
+2026-10-28 18:41:17 | INFO | WindowMean   overall  RMSE 16.4417 | MAE 8.0269 | MAPE 28.22%
+2026-10-28 18:41:18 | INFO | Metrics and plots written to C:\Users\Roshan\convlstm_milano\outputs\smoke
+2026-10-28 18:47:06 | INFO | Loaded C:\Users\Roshan\convlstm_milano\outputs\smoke\best_model.pt (epoch 2, val loss 0.000580); 60 test windows on cpu
+2026-10-28 18:47:06 | INFO | model        horizon         RMSE          MAE    MAPE %
+2026-10-28 18:47:06 | INFO | ConvLSTM           1      19.3608      10.6845     60.96
+2026-10-28 18:47:06 | INFO | Persistence        1      19.9476       9.6697     33.61
+2026-10-28 18:47:06 | INFO | WindowMean         1      16.4417       8.0269     28.22
+2026-10-28 18:47:06 | INFO | ConvLSTM     overall  RMSE 19.3608 | MAE 10.6845 | MAPE 60.96%
+2026-10-28 18:47:06 | INFO | Persistence  overall  RMSE 19.9476 | MAE 9.6697 | MAPE 33.61%
+2026-10-28 18:47:06 | INFO | WindowMean   overall  RMSE 16.4417 | MAE 8.0269 | MAPE 28.22%
+2026-10-28 18:47:07 | INFO | Metrics and plots written to C:\Users\Roshan\convlstm_milano\outputs\smoke
+2026-10-29 11:52:54 | INFO | Loaded C:\Users\Roshan\Downloads\convlstm_milano\outputs\smoke\best_model.pt (epoch 2, val loss 0.000580); 60 test windows on cpu
+2026-10-29 11:52:54 | INFO | model        horizon         RMSE          MAE    MAPE %
+2026-10-29 11:52:54 | INFO | ConvLSTM           1      19.3608      10.6845     60.96
+2026-10-29 11:52:54 | INFO | Persistence        1      19.9476       9.6697     33.61
+2026-10-29 11:52:54 | INFO | WindowMean         1      16.4417       8.0269     28.22
+2026-10-29 11:52:54 | INFO | ConvLSTM     overall  RMSE 19.3608 | MAE 10.6845 | MAPE 60.96%
+2026-10-29 11:52:54 | INFO | Persistence  overall  RMSE 19.9476 | MAE 9.6697 | MAPE 33.61%
+2026-10-29 11:52:54 | INFO | WindowMean   overall  RMSE 16.4417 | MAE 8.0269 | MAPE 28.22%
+2026-10-29 11:53:08 | INFO | Loaded C:\Users\Roshan\Downloads\convlstm_milano\outputs\smoke\best_model.pt (epoch 2, val loss 0.000580); 60 test windows on cpu
+2026-10-29 11:53:08 | INFO | model        horizon         RMSE          MAE    MAPE %
+2026-10-29 11:53:08 | INFO | ConvLSTM           1      19.3608      10.6845     60.96
+2026-10-29 11:53:08 | INFO | Persistence        1      19.9476       9.6697     33.61
+2026-10-29 11:53:08 | INFO | WindowMean         1      16.4417       8.0269     28.22
+2026-10-29 11:53:08 | INFO | ConvLSTM     overall  RMSE 19.3608 | MAE 10.6845 | MAPE 60.96%
+2026-10-29 11:53:08 | INFO | Persistence  overall  RMSE 19.9476 | MAE 9.6697 | MAPE 33.61%
+2026-10-29 11:53:08 | INFO | WindowMean   overall  RMSE 16.4417 | MAE 8.0269 | MAPE 28.22%

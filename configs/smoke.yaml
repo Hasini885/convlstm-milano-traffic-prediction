@@ -1,0 +1,22 @@
+# Fast CPU smoke test: 3 days of data, a 32x32 crop, a small model and a few epochs.
+# Works with the real data (point raw_dir at data/raw) or with synthetic files from
+# scripts/make_synthetic_data.py.
+_base_: default.yaml
+
+paths:
+  raw_dir: data/synthetic/raw
+  processed_dir: data/synthetic/processed
+  output_dir: outputs/smoke
+
+data:
+  max_days: 3
+  crop: [34, 66, 34, 66]
+
+model:
+  hidden_dim: 16
+  refine_channels: 16
+
+training:
+  batch_size: 8
+  epochs: 3
+  amp: false

@@ -1,0 +1,23 @@
+# Data: too large for git. Raw files come from Kaggle/Dataverse; the rest is regenerated.
+data/raw/*
+data/processed/*
+data/synthetic/
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+*.npy
+
+# Python / environments
+__pycache__/
+*.pyc
+.venv/
+.ipynb_checkpoints/
+
+# OS files
+desktop.ini
+Thumbs.db
+.DS_Store
+
+# Credentials (never commit)
+kaggle.json
+access_token
+.env

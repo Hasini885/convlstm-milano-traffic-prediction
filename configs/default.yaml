@@ -1,0 +1,61 @@
+# Default configuration: full Milano dataset, internet traffic, 1 hour in -> 10 minutes ahead.
+# Any value can be overridden from the CLI, e.g. --set training.epochs=20 data.t_out=3
+seed: 42
+device: auto              # auto | cuda | cpu
+
+paths:                    # relative paths are resolved against the project root
+  raw_dir: data/raw
+  processed_dir: data/processed
+  output_dir: outputs/default
+
+data:
+  # Channels stored in the processed tensor (preprocessing). Keep all five so you can switch the
+  # input/target channels below without re-running preprocessing.
+  features: [smsin, smsout, callin, callout, internet]
+  input_features: [internet]       # model input channels, e.g. all five
+  target_features: [internet]      # predicted channels (subset of `features`)
+  interval_minutes: 10
+  grid_size: 100
+  max_days: null                   # preprocess only the first N days (null = all)
+  fill_method: zero                # zero | ffill_zero  (see src/dataset.py docstring)
+  log_transform: false             # apply log1p before min-max scaling (helps with heavy tails)
+  mask_inactive: true              # exclude cells with no training-period activity from loss/metrics
+  t_in: 6                          # 6 x 10 min = 1 hour of history
+  t_out: 1                         # frames to predict
+  stride: 1                        # step between training windows
+  split: [0.70, 0.15, 0.15]        # chronological train/val/test
+  crop: null                       # [row0, row1, col0, col1] to train on a sub-grid
+  num_workers: 0                   # DataLoader workers (0 is safest on Windows)
+
+model:
+  hidden_dim: 64                   # int, or a list with one entry per layer
+  num_layers: 2
+  kernel_size: [3, 3]
+  bias: true
+  refine_layers: 2                 # 3x3 conv refinement in the head (0 = plain 1x1 projection)
+  refine_channels: 32
+  residual: false                  # predict the change from the last observed frame (tended to get stuck
+                                   # at the persistence solution with plain min-max scaling)
+
+training:
+  batch_size: 16
+  epochs: 100
+  lr: 1.0e-3
+  weight_decay: 0.0
+  loss: mse                        # mse | huber
+  huber_delta: 0.05                # on the normalised [0, 1] scale
+  patience: 10                     # early stopping on validation loss
+  min_delta: 0.0
+  scheduler_patience: 5            # ReduceLROnPlateau
+  scheduler_factor: 0.5
+  min_lr: 1.0e-6
+  grad_clip: 1.0
+  amp: true                        # mixed precision (CUDA only)
+  max_hours: null                  # stop training before this wall-clock budget is exceeded
+  max_train_batches: null          # cap batches per epoch (debugging)
+  max_eval_batches: null
+
+evaluation:
+  mape_threshold: 1.0              # MAPE only counts cells whose true value exceeds this
+  num_plot_samples: 3
+  plot_cell: null                  # [row, col] within the (cropped) grid; null = random busy cell

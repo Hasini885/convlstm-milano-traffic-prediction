@@ -1,0 +1,15 @@
+# Full run on a Kaggle GPU notebook. The notebook sets paths.raw_dir to wherever the raw files
+# are found under /kaggle/input (or downloaded to).
+_base_: default.yaml
+
+paths:
+  raw_dir: /kaggle/input
+  processed_dir: /kaggle/temp/processed   # large intermediate tensor, kept out of the notebook output
+  output_dir: /kaggle/working/outputs/convlstm_internet
+
+data:
+  num_workers: 2
+
+training:
+  batch_size: 16
+  max_hours: 8.5                   # Kaggle sessions are limited to 12 h; leave time for evaluation

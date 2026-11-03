@@ -1,0 +1,76 @@
+{
+  "ConvLSTM": {
+    "overall": {
+      "RMSE": 19.360817856194636,
+      "MAE": 10.684469164052043,
+      "MAPE_%": 60.96386684121975
+    },
+    "per_horizon": [
+      {
+        "horizon": 1,
+        "RMSE": 19.360817856194636,
+        "MAE": 10.684469164052043,
+        "MAPE_%": 60.96386684121975
+      }
+    ],
+    "per_channel": {
+      "internet": {
+        "RMSE": 19.360817856194636,
+        "MAE": 10.684469164052043,
+        "MAPE_%": 60.96386684121975
+      }
+    }
+  },
+  "Persistence": {
+    "overall": {
+      "RMSE": 19.947577355344148,
+      "MAE": 9.669697458809727,
+      "MAPE_%": 33.60890926547358
+    },
+    "per_horizon": [
+      {
+        "horizon": 1,
+        "RMSE": 19.947577355344148,
+        "MAE": 9.669697458809727,
+        "MAPE_%": 33.60890926547358
+      }
+    ],
+    "per_channel": {
+      "internet": {
+        "RMSE": 19.947577355344148,
+        "MAE": 9.669697458809727,
+        "MAPE_%": 33.60890926547358
+      }
+    }
+  },
+  "WindowMean": {
+    "overall": {
+      "RMSE": 16.441719489888744,
+      "MAE": 8.026850863870399,
+      "MAPE_%": 28.22486356178497
+    },
+    "per_horizon": [
+      {
+        "horizon": 1,
+        "RMSE": 16.441719489888744,
+        "MAE": 8.026850863870399,
+        "MAPE_%": 28.22486356178497
+      }
+    ],
+    "per_channel": {
+      "internet": {
+        "RMSE": 16.441719489888744,
+        "MAE": 8.026850863870399,
+        "MAPE_%": 28.22486356178497
+      }
+    }
+  },
+  "notes": {
+    "units": "original dataset units (unitless activity counts)",
+    "mask_inactive": true,
+    "active_cells": 1024,
+    "mape_threshold": 1.0,
+    "test_windows": 60,
+    "checkpoint": "C:\\Users\\Roshan\\Downloads\\convlstm_milano\\outputs\\smoke\\best_model.pt"
+  }
+}
