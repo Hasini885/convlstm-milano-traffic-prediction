@@ -34,7 +34,7 @@ Links:
 6. [Training setup](#6-training-setup)
 7. [Evaluation method and baselines](#7-evaluation-method-and-baselines)
 8. [Development and verification findings (synthetic data)](#8-development-and-verification-findings-synthetic-data)
-9. [Final results on the real data](#9-final-results-on-the-real-data)
+9. [Final results on the real data (with output plots and logs)](#9-final-results-on-the-real-data)
 10. [Analysis and interpretation of the results](#10-analysis-and-interpretation-of-the-results)
 11. [Engineering findings and problems solved](#11-engineering-findings-and-problems-solved)
 12. [Limitations](#12-limitations)
@@ -307,6 +307,17 @@ Before using GPU time, the whole pipeline was built and tested on the developmen
 Test: ConvLSTM RMSE 19.36 vs persistence 19.95 vs window mean 16.44. The model was undertrained
 after only 3 epochs.
 
+Smoke-test outputs (synthetic data, 32×32 crop). They show the pipeline producing all three
+plots before the real run.
+
+![Smoke test: predicted vs actual heatmaps on synthetic data](outputs/smoke/heatmaps.png)
+
+*Synthetic hotspots: actual, ConvLSTM prediction and absolute error.*
+
+![Smoke test: cell time series on synthetic data](outputs/smoke/cell_timeseries.png)
+
+*Synthetic busy cell: the ConvLSTM gives a smooth forecast through the step-to-step noise.*
+
 **Ablation study (12 epochs each):**
 
 | Setting | ConvLSTM RMSE | MAE | MAPE % |
@@ -371,17 +382,94 @@ after only 3 epochs.
 
 **The ConvLSTM beats both baselines on all three metrics.**
 
-### 9.4 Plots (in `outputs/kaggle/`)
+### 9.4 Output plots (from `outputs/kaggle/`)
 
-- **`heatmaps.png`** (test times 2013-12-27 19:10, 2013-12-29 19:00 and 2013-12-30 21:20): the
-  predicted maps reproduce Milan's spatial structure, with the dense city centre and the
-  suburban hotspots (stations, shopping areas, the airport region). The absolute error is
-  concentrated in the busy centre.
-- **`cell_timeseries.png`** (CellID 4128, row 41, col 27, a busy cell): over the test period the
-  prediction follows the daily cycle (night lows around 80–100, daytime highs of 250–330) and
-  the holiday days.
-- **`loss_curve.png`**: training loss drops sharply after epoch 1 and then slowly improves;
-  validation loss settles early and flattens, so early stopping triggered at epoch 51.
+#### Figure 1: predicted vs actual traffic maps
+
+![Actual vs ConvLSTM prediction vs absolute error, three test times](outputs/kaggle/heatmaps.png)
+
+*Test times 2013-12-27 19:10, 2013-12-29 19:00 and 2013-12-30 21:20. Left: actual internet
+traffic. Middle: ConvLSTM prediction. Right: absolute error. North is up.*
+
+The predicted maps reproduce Milan's spatial structure: the dense city centre and the suburban
+hotspots (stations, shopping areas, the airport region). The absolute error is concentrated in
+the busy centre, where traffic levels are highest.
+
+#### Figure 2: time series for one busy cell
+
+![1-step-ahead test predictions for CellID 4128](outputs/kaggle/cell_timeseries.png)
+
+*CellID 4128 (row 41, col 27) over the whole test period: actual (blue), ConvLSTM (orange)
+and persistence (green).*
+
+The prediction follows the daily cycle (night lows around 80–100, daytime highs of 250–330)
+through Christmas and New Year.
+
+#### Figure 3: training and validation loss
+
+![Training and validation loss per epoch](outputs/kaggle/loss_curve.png)
+
+*Normalised MSE per epoch, log scale.*
+
+Training loss drops sharply after epoch 1 and then improves slowly. Validation loss settles
+early and flattens, so early stopping triggered at epoch 51 (best: epoch 41).
+
+### 9.5 Console output from the Kaggle run
+
+These are the actual logs from the run, in `outputs/kaggle/kaggle_notebook.log`, `train.log`
+and `evaluate.log`. Times are in UTC.
+
+**Environment and data detection:**
+
+```text
+torch 2.11.0+cu130 | CUDA: True | Tesla T4
+/kaggle/working: 20.9 GB free
+/kaggle/temp: 1038.2 GB free
+62 raw files in /kaggle/input/datasets/dkgmgo/telecom-italia-milan/data
+first: sms-call-internet-mi-2013-11-01.txt | last: sms-call-internet-mi-2014-01-01.txt
+1,439,982 (time, cell) records in the first file; time step = 10 min; 10,000 distinct cells
+```
+
+**Preprocessing:**
+
+```text
+07:01:48 | INFO | Building tensor (8928, 5, 100, 100) from 62 files [2013-11-01 .. 2014-01-01]
+07:01:55 | INFO |   [1/62] sms-call-internet-mi-2013-11-01.txt: 1,439,982 (time, cell) records
+07:02:05 | INFO |   [2/62] sms-call-internet-mi-2013-11-02.txt: 1,439,986 (time, cell) records
+   ...
+07:12:51 | INFO |   [61/62] sms-call-internet-mi-2013-12-31.txt: 1,438,736 (time, cell) records
+07:13:02 | INFO |   [62/62] sms-call-internet-mi-2014-01-01.txt: 1,438,701 (time, cell) records
+07:13:02 | INFO | Done. Metadata written to /kaggle/temp/processed/meta.json
+tensor shape (T, C, H, W): [8928, 5, 100, 100] | features: ['smsin', 'smsout', 'callin', 'callout', 'internet']
+days: 2013-11-01 -> 2014-01-01 (62 days)
+```
+
+**Training (first and last epochs):**
+
+```text
+07:13:09 | INFO | Device: cuda | windows train/val/test = 6243/1333/1334
+07:13:09 | INFO | Loss mask: 10000/10000 cells active in the training period
+07:13:09 | INFO | Model: 464,290 parameters
+07:15:36 | INFO | Epoch   1 | train 0.000057 | val 0.000005 | lr 1.00e-03 | 141.0s  * saved best
+07:18:02 | INFO | Epoch   2 | train 0.000008 | val 0.000002 | lr 1.00e-03 | 146.0s  * saved best
+07:20:28 | INFO | Epoch   3 | train 0.000007 | val 0.000003 | lr 1.00e-03 | 145.9s
+   ...
+09:15:34 | INFO | Epoch  50 | train 0.000006 | val 0.000002 | lr 1.25e-04 | 148.6s
+09:18:02 | INFO | Epoch  51 | train 0.000006 | val 0.000002 | lr 1.25e-04 | 148.6s
+09:18:02 | INFO | Early stopping: no val improvement for 10 epochs
+```
+
+The full per-epoch history at full precision is in `outputs/kaggle/history.csv`.
+
+**Evaluation:**
+
+```text
+09:18:09 | INFO | Loaded best_model.pt (epoch 41, val loss 0.000002); 1334 test windows on cuda
+09:18:29 | INFO | model        horizon         RMSE          MAE    MAPE %
+09:18:29 | INFO | ConvLSTM           1       8.4745       3.9071     11.99
+09:18:29 | INFO | Persistence        1       9.3922       4.3344     12.56
+09:18:29 | INFO | WindowMean         1      10.3727       4.4394     12.13
+```
 
 ---
 
