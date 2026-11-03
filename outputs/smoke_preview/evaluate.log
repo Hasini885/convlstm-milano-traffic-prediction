@@ -1,9 +1,0 @@
-2026-10-29 11:53:23 | INFO | Loaded C:\Users\Roshan\Downloads\convlstm_milano\outputs\smoke\best_model.pt (epoch 2, val loss 0.000580); 60 test windows on cpu
-2026-10-29 11:53:23 | INFO | model        horizon         RMSE          MAE    MAPE %
-2026-10-29 11:53:23 | INFO | ConvLSTM           1      19.3608      10.6845     60.96
-2026-10-29 11:53:23 | INFO | Persistence        1      19.9476       9.6697     33.61
-2026-10-29 11:53:23 | INFO | WindowMean         1      16.4417       8.0269     28.22
-2026-10-29 11:53:23 | INFO | ConvLSTM     overall  RMSE 19.3608 | MAE 10.6845 | MAPE 60.96%
-2026-10-29 11:53:23 | INFO | Persistence  overall  RMSE 19.9476 | MAE 9.6697 | MAPE 33.61%
-2026-10-29 11:53:23 | INFO | WindowMean   overall  RMSE 16.4417 | MAE 8.0269 | MAPE 28.22%
-2026-10-29 11:53:25 | INFO | Metrics and plots written to C:\Users\Roshan\Downloads\convlstm_milano\outputs\smoke_preview

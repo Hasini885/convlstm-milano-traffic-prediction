@@ -33,17 +33,16 @@ Links:
 5. [Model: ConvLSTM architecture](#5-model-convlstm-architecture)
 6. [Training setup](#6-training-setup)
 7. [Evaluation method and baselines](#7-evaluation-method-and-baselines)
-8. [Development and verification findings (synthetic data)](#8-development-and-verification-findings-synthetic-data)
-9. [Final results on the real data (with output plots and logs)](#9-final-results-on-the-real-data)
-10. [Analysis and interpretation of the results](#10-analysis-and-interpretation-of-the-results)
-11. [Engineering findings and problems solved](#11-engineering-findings-and-problems-solved)
-12. [Limitations](#12-limitations)
-13. [Future work and suggested experiments](#13-future-work-and-suggested-experiments)
-14. [What to show your professor](#14-what-to-show-your-professor)
-15. [Likely questions, with answers](#15-likely-questions-with-answers)
-16. [How to reproduce everything](#16-how-to-reproduce-everything)
-17. [Project timeline](#17-project-timeline)
-18. [References and data citation](#18-references-and-data-citation)
+8. [Final results on the real data (with output plots and logs)](#8-final-results-on-the-real-data)
+9. [Analysis and interpretation of the results](#9-analysis-and-interpretation-of-the-results)
+10. [Engineering findings and problems solved](#10-engineering-findings-and-problems-solved)
+11. [Limitations](#11-limitations)
+12. [Future work and suggested experiments](#12-future-work-and-suggested-experiments)
+13. [What to show your professor](#13-what-to-show-your-professor)
+14. [Likely questions, with answers](#14-likely-questions-with-answers)
+15. [How to reproduce everything](#15-how-to-reproduce-everything)
+16. [Project timeline](#16-project-timeline)
+17. [References and data citation](#17-references-and-data-citation)
 
 ---
 
@@ -221,7 +220,6 @@ Details:
 |---|---|
 | Default, 1 input channel (used in the final run) | **464,290** |
 | Default, 5 input channels | 473,506 |
-| Smoke-test configuration (hidden 16) | 30,978 |
 
 ---
 
@@ -270,86 +268,12 @@ Implemented in `src/evaluate.py`.
 
 ---
 
-## 8. Development and verification findings (synthetic data)
-
-Before using GPU time, the whole pipeline was built and tested on the development laptop
-(Windows 11, Python 3.11.9, CPU-only PyTorch 2.12.1, no GPU). A **synthetic data generator**
-(`scripts/make_synthetic_data.py`) writes files in the *exact* raw Dataverse format:
-
-- 12 Gaussian traffic hotspots scaled by a daily cycle, with log-normal noise
-- extra foreign country-code rows
-- empty fields for tiny values
-- about 3% of rows removed
-
-### 8.1 Correctness checks (all passed)
-
-| Check | Result |
-|---|---|
-| A single (time, cell) value in the tensor vs the raw file | identical (6.6311 = 6.6311) |
-| A full day's total in the tensor vs a direct pandas groupby | identical |
-| UTC → Milan conversion | `1383260400000` ms → 2013-11-01 00:00 local = time index 0 |
-| Forward-fill mode | 0 NaNs left; zero cells drop from 15.9% (zero-fill) to 3.0% (forward-fill) on day 1 |
-| Gzip input (`.txt.gz`) | tensor **identical** to the one built from plain `.txt` |
-| Model shapes | (2, 6, 5, 20, 24) → (2, 3, 2, 20, 24) with per-layer hidden sizes [8, 12], refinement and residual mode; backward pass OK |
-| Splits on 3 days (432 steps) | 296 / 58 / 60 train / val / test windows |
-| Time budget | training stopped cleanly when the budget was reached and kept the best checkpoint |
-
-### 8.2 Smoke-test results (3 days, 32×32 crop, hidden 16)
-
-**3-epoch run** (`outputs/smoke/`):
-
-| Epoch | Train loss | Val loss |
-|---|---|---|
-| 1 | 0.002776 | 0.001553 |
-| 2 | 0.000487 | **0.000580** (best) |
-| 3 | 0.000387 | 0.000640 |
-
-Test: ConvLSTM RMSE 19.36 vs persistence 19.95 vs window mean 16.44. The model was undertrained
-after only 3 epochs.
-
-Smoke-test outputs (synthetic data, 32×32 crop). They show the pipeline producing all three
-plots before the real run.
-
-![Smoke test: predicted vs actual heatmaps on synthetic data](outputs/smoke/heatmaps.png)
-
-*Synthetic hotspots: actual, ConvLSTM prediction and absolute error.*
-
-![Smoke test: cell time series on synthetic data](outputs/smoke/cell_timeseries.png)
-
-*Synthetic busy cell: the ConvLSTM gives a smooth forecast through the step-to-step noise.*
-
-**Ablation study (12 epochs each):**
-
-| Setting | ConvLSTM RMSE | MAE | MAPE % |
-|---|---|---|---|
-| `residual: false` (chosen default) | **15.07** | 7.60 | 29.55 |
-| `log_transform: true`, `residual: true` | 15.25 | **7.20** | **22.60** |
-| `log_transform: true`, `residual: false` | **14.94** | 7.31 | 26.22 |
-| `residual: true`, plain min-max | ~20.4 (stuck at persistence level) | | |
-| *Persistence / window mean (reference)* | *19.95 / 16.44* | *9.67 / 8.03* | *33.61 / 28.22* |
-
-**Findings from development:**
-
-1. **The pipeline learns.** After 12 epochs the ConvLSTM beats both baselines on RMSE.
-2. **Residual mode doesn't work with min-max scaling.** Predicting the *change* from the last
-   frame made the model collapse to the persistence solution (RMSE ~20.4), so it was **turned
-   off by default**.
-3. **Log scaling helps MAPE.** `log_transform: true` gave the best MAPE (22.6%), because it
-   spreads out small values. This is the most promising next experiment on the real data.
-4. **Synthetic data is not a performance predictor.** Its noise is independent at every step,
-   which makes the window mean an unusually strong baseline there. On real data, persistence is
-   the stronger baseline (§9).
-5. A multi-horizon test (`t_out = 3`, all five features as input) confirmed that per-horizon
-   metrics work; the error grows with the horizon, as expected.
-
----
-
-## 9. Final results on the real data
+## 8. Final results on the real data
 
 **Run:** Kaggle notebook `hasinisaimaram/convlstm-milano-traffic-prediction`, version 1,
 2026-11-03. All artefacts are in `outputs/kaggle/`.
 
-### 9.1 Run details
+### 8.1 Run details
 
 | Item | Value |
 |---|---|
@@ -365,7 +289,7 @@ plots before the real run.
 | Training time | **124.8 min** (about 2 h 5 min); whole notebook about 2 h 18 min |
 | Best validation loss | 1.829e-6 (normalised MSE); training loss at that epoch 6.06e-6 |
 
-### 9.2 Test-set metrics (original units)
+### 8.2 Test-set metrics (original units)
 
 | Model | RMSE | MAE | MAPE % |
 |---|---|---|---|
@@ -373,7 +297,7 @@ plots before the real run.
 | Persistence (last frame) | 9.3922 | 4.3344 | 12.56 |
 | Window mean (last hour) | 10.3727 | 4.4394 | 12.13 |
 
-### 9.3 Improvement of the ConvLSTM
+### 8.3 Improvement of the ConvLSTM
 
 | Compared with | RMSE | MAE | MAPE |
 |---|---|---|---|
@@ -382,7 +306,7 @@ plots before the real run.
 
 **The ConvLSTM beats both baselines on all three metrics.**
 
-### 9.4 Output plots (from `outputs/kaggle/`)
+### 8.4 Output plots (from `outputs/kaggle/`)
 
 #### Figure 1: predicted vs actual traffic maps
 
@@ -414,7 +338,7 @@ through Christmas and New Year.
 Training loss drops sharply after epoch 1 and then improves slowly. Validation loss settles
 early and flattens, so early stopping triggered at epoch 51 (best: epoch 41).
 
-### 9.5 Console output from the Kaggle run
+### 8.5 Console output from the Kaggle run
 
 These are the actual logs from the run, in `outputs/kaggle/kaggle_notebook.log`, `train.log`
 and `evaluate.log`. Times are in UTC.
@@ -473,7 +397,7 @@ The full per-epoch history at full precision is in `outputs/kaggle/history.csv`.
 
 ---
 
-## 10. Analysis and interpretation of the results
+## 9. Analysis and interpretation of the results
 
 1. **Beating persistence is the key result.** For 10-minute-ahead traffic, "repeat the last
    frame" is very hard to beat, because traffic changes little in 10 minutes. A 10% lower RMSE
@@ -481,8 +405,7 @@ The full per-epoch history at full precision is in `outputs/kaggle/history.csv`.
    over the hour, and neighbouring cells.
 2. **Persistence is stronger than the window mean on real data** (RMSE 9.39 vs 10.37). Real
    traffic is smooth over 10 minutes but drifts over an hour, so averaging the whole hour lags
-   behind trends. On synthetic data it was the other way round, because there the noise was
-   random at every step.
+   behind trends.
 3. **The MAPE improvement is smaller (−4.6%) than the RMSE improvement (−9.8%).** RMSE is
    dominated by busy cells with large absolute values, where the ConvLSTM helps most. MAPE
    weights every cell equally in relative terms, and low-traffic cells, where relative errors
@@ -504,7 +427,7 @@ The full per-epoch history at full precision is in `outputs/kaggle/history.csv`.
 
 ---
 
-## 11. Engineering findings and problems solved
+## 10. Engineering findings and problems solved
 
 | Problem | Finding | Solution |
 |---|---|---|
@@ -513,7 +436,7 @@ The full per-epoch history at full precision is in `outputs/kaggle/history.csv`.
 | UTC timestamps | Days would be shifted by an hour | Convert to Europe/Rome; absolute time indexing |
 | 1.8 GB tensor | Too big to keep in RAM comfortably | Memory-mapped `.npy`, opened lazily in each DataLoader worker |
 | Possible temporal leakage | Random splits leak the future | Chronological split; windows confined to one split; scaling fitted on training only |
-| Residual model collapsed to persistence | Found in the ablation | Turned residual mode off by default |
+| Residual model collapsed to persistence | Found in early tests | Turned residual mode off by default |
 | Dataverse guestbook blocks downloads | HTTP 400 without a guestbook response; 403 for the Python user agent | Used the Kaggle mirror, verified byte for byte against the Dataverse file list |
 | Disk space for raw data | 20.8 GB uncompressed | Optional gzip-on-download; preprocessing reads `.gz` directly |
 | Kaggle's 12-hour session limit | Training must not stop evaluation from running | `training.max_hours` budget (8.5 h) |
@@ -525,13 +448,13 @@ The full per-epoch history at full precision is in `outputs/kaggle/history.csv`.
 
 ---
 
-## 12. Limitations
+## 11. Limitations
 
 1. **One configuration on real data.** Internet only, one step (10 minutes) ahead, plain
    min-max scaling. No hyperparameter search yet.
 2. **Single test period,** and it is a holiday period. Results on a normal working week might
    differ.
-3. **The scaling compresses low-traffic cells** (tiny normalised losses); see §10.7.
+3. **The scaling compresses low-traffic cells** (tiny normalised losses); see §9.7.
 4. **No external information:** no calendar or holiday features, no weather, no events.
 5. **Grid orientation** (IDs running south→north) is inferred from the dataset documentation and
    should be checked against `milano-grid.geojson` if exact geography matters.
@@ -541,7 +464,7 @@ The full per-epoch history at full precision is in `outputs/kaggle/history.csv`.
 
 ---
 
-## 13. Future work and suggested experiments
+## 12. Future work and suggested experiments
 
 Each experiment is one Kaggle run (about 2 hours) with a single config change:
 
@@ -565,7 +488,7 @@ Further ideas:
 
 ---
 
-## 14. What to show your professor
+## 13. What to show your professor
 
 Present it as a story: **problem → data → method → results → what you learned.**
 
@@ -581,10 +504,10 @@ Present it as a story: **problem → data → method → results → what you le
 | 6 | Avoiding leakage | chronological split, train-only scaling, windows inside splits | §4 |
 | 7 | Model | ConvLSTM cell equations and architecture diagram | §5 |
 | 8 | Training | settings table; T4 GPU; 51 epochs; early stopping | §6, `loss_curve.png` |
-| 9 | Results | the metrics table; −9.8% RMSE vs persistence | §9, `metrics.json` |
+| 9 | Results | the metrics table; −9.8% RMSE vs persistence | §8, `metrics.json` |
 | 10 | Visual results | heatmaps and cell time series | `heatmaps.png`, `cell_timeseries.png` |
-| 11 | Analysis | why beating persistence matters; val < train explained; where errors are | §10 |
-| 12 | Limitations and future work | §12–13; the experiment table | §12, §13 |
+| 11 | Analysis | why beating persistence matters; val < train explained; where errors are | §9 |
+| 12 | Limitations and future work | §11–12; the experiment table | §11, §12 |
 
 ### Live demo (optional, impressive)
 
@@ -604,7 +527,7 @@ Present it as a story: **problem → data → method → results → what you le
 
 ---
 
-## 15. Likely questions, with answers
+## 14. Likely questions, with answers
 
 **Q1. How does a ConvLSTM cell work?**
 Like an LSTM, it keeps a cell state (long-term memory) and a hidden state (output), controlled
@@ -661,7 +584,7 @@ minutes. Preprocessing the 62 days took about 11 minutes.
 **Q12. How would you improve the results?**
 Log scaling (the most promising), adding SMS and call features as inputs, time-of-day and
 holiday features, longer input history, hyperparameter tuning, and an encoder–decoder for
-longer horizons (§13).
+longer horizons (§12).
 
 **Q13. What were the hardest problems?**
 Understanding the raw data (country-code rows, sparsity, UTC times) and getting the full data
@@ -680,17 +603,7 @@ applies to any "grid over time" problem (weather radar, road traffic, pollution)
 
 ---
 
-## 16. How to reproduce everything
-
-**Locally (no download, CPU):**
-
-```bash
-pip install -r requirements.txt
-python scripts/make_synthetic_data.py --out data/synthetic/raw --days 3
-python -m src.dataset  --config configs/smoke.yaml
-python -m src.train    --config configs/smoke.yaml
-python -m src.evaluate --config configs/smoke.yaml
-```
+## 15. How to reproduce everything
 
 **Full real-data run on Kaggle:**
 
@@ -713,12 +626,11 @@ Experiments are run by adding `--set key=value`, for example
 
 ---
 
-## 17. Project timeline
+## 16. Project timeline
 
 | Date | Milestone |
 |---|---|
 | 2026-10-28 | Project designed and implemented: preprocessing, ConvLSTM model, training, evaluation, configs |
-| 2026-10-28 | Verified end to end on synthetic data; ablation study (residual mode, log scaling) |
 | 2026-10-29 | Plots reviewed and improved; full README written |
 | 2026-11-03 | Plain-language project overview written |
 | 2026-11-03 | Kaggle support added: notebook, Kaggle config, gzip input, training time budget, Dataverse downloader |
@@ -728,7 +640,7 @@ Experiments are run by adding `--set key=value`, for example
 
 ---
 
-## 18. References and data citation
+## 17. References and data citation
 
 - **Dataset:** Telecom Italia (2015). *Telecommunications - SMS, Call, Internet - MI.* Harvard
   Dataverse. doi:10.7910/DVN/EGZHFV.

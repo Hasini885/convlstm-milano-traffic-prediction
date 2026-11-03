@@ -39,9 +39,8 @@ visualisation.
 |---|---|
 | Preprocessing (`src/dataset.py`) | Done; checked against a direct pandas aggregation |
 | Model (`src/model.py`) | Done; forward/backward checked for 1 and 5 inputs, multi-channel output, `t_out` 1 and 3 |
-| Training (`src/train.py`) | Done; runs end to end on CPU |
+| Training (`src/train.py`) | Done; runs on GPU (CUDA) or CPU |
 | Evaluation and plots (`src/evaluate.py`) | Done; metrics per horizon and channel, baselines, 3 plots |
-| Synthetic data generator | Done; writes files in the exact Dataverse raw format |
 | **Real Milano data** | **Done.** Full run on Kaggle (Tesla T4): 62 days, full 100×100 grid. Results in §13 and `outputs/kaggle/`. |
 
 ---
@@ -54,7 +53,7 @@ convlstm_milano/
 ├── requirements.txt              # pinned dependencies
 ├── configs/
 │   ├── default.yaml              # full-data hyperparameters (every option, with comments)
-│   └── smoke.yaml                # small, fast CPU test; inherits default.yaml via `_base_`
+│   └── kaggle.yaml               # Kaggle GPU run; inherits default.yaml via `_base_`
 ├── src/
 │   ├── __init__.py
 │   ├── utils.py                  # config loading + CLI overrides, seeding, logging, device, JSON I/O
@@ -63,20 +62,19 @@ convlstm_milano/
 │   ├── train.py                  # masked loss, early stopping, LR scheduling, checkpointing
 │   └── evaluate.py               # streaming metrics, baselines, heatmaps / time-series / loss plots
 ├── scripts/
-│   └── make_synthetic_data.py    # fake daily files in the raw Dataverse format
+│   ├── download_dataverse.py     # downloader for the Harvard Dataverse files
+│   └── daily_push.ps1            # daily commit-and-push helper
+├── kaggle/
+│   └── convlstm_milano_kaggle.ipynb  # full real-data run on a Kaggle GPU
 ├── data/
 │   ├── raw/                      # put the real daily files here
-│   ├── processed/                # tensor.npy + meta.json for the real data
-│   └── synthetic/                # created by the smoke test
-│       ├── raw/                  # 3 synthetic daily .txt files (~232 MB)
-│       └── processed/            # synthetic tensor (432, 5, 100, 100) (~83 MB)
+│   └── processed/                # tensor.npy + meta.json for the real data
 └── outputs/
-    ├── smoke/                    # checkpoint, logs, metrics and plots from the smoke run
-    └── smoke_preview/            # re-rendered plots (integer epoch ticks on the loss curve)
+    └── kaggle/                   # checkpoint, logs, metrics and plots from the real-data run
 ```
 
-Code size: about 1,530 lines (`dataset.py` 488, `evaluate.py` 314, `model.py` 243,
-`train.py` 194, `utils.py` 122, `make_synthetic_data.py` 85, configs 82).
+Code size: about 1,550 lines (`dataset.py` 491, `evaluate.py` 314, `model.py` 243,
+`train.py` 200, `utils.py` 122, `download_dataverse.py` 101, configs 76).
 `desktop.ini` and `__pycache__/` are Windows and Python artefacts and can be ignored.
 
 ---
@@ -88,13 +86,7 @@ From the project root:
 ```bash
 pip install -r requirements.txt
 
-# A. No download needed: run the full pipeline on synthetic data (under a minute on CPU)
-python scripts/make_synthetic_data.py --out data/synthetic/raw --days 3
-python -m src.dataset  --config configs/smoke.yaml
-python -m src.train    --config configs/smoke.yaml
-python -m src.evaluate --config configs/smoke.yaml
-
-# B. Real data: put the daily files in data/raw/, then
+# Put the real daily files in data/raw/, then
 python -m src.dataset  --config configs/default.yaml
 python -m src.train    --config configs/default.yaml
 python -m src.evaluate --config configs/default.yaml
@@ -297,7 +289,8 @@ Output Ŷ  (B, T_out, C_out, H, W)
 ### `ConvLSTMForecaster`
 
 - Encoder plus head. Optional `residual` mode predicts the change from the last observed frame
-  (`ŷ = x_last + head(h_T)`). It is **off by default**; see §13.
+  (`ŷ = x_last + head(h_T)`). It is **off by default**: in early tests with plain min-max scaling it stalled at the
+  persistence level.
 
 ### Parameter counts
 
@@ -305,7 +298,6 @@ Output Ŷ  (B, T_out, C_out, H, W)
 |---|---|
 | Default (hidden 64, 2 layers, refine 2×32), 1 input channel | 464,290 |
 | Default, 5 input channels | 473,506 |
-| Smoke config (hidden 16, refine 16), 1 input channel | 30,978 |
 
 ---
 
@@ -385,7 +377,7 @@ Both need every target feature to also be an input feature; otherwise they are s
 
 ## 11. Configuration reference
 
-Configs are YAML. `smoke.yaml` inherits `default.yaml` through `_base_: default.yaml` and
+Configs are YAML. `kaggle.yaml` inherits `default.yaml` through `_base_: default.yaml` and
 overrides only what it needs. Relative paths are resolved against the project root.
 
 ### Top level
@@ -463,11 +455,6 @@ overrides only what it needs. Relative paths are resolved against the project ro
 | `num_plot_samples` | 3 | heatmap rows |
 | `plot_cell` | null | `[row, col]` in the (cropped) grid; null = random busy cell |
 
-### `smoke.yaml` overrides
-
-Synthetic data paths, `output_dir: outputs/smoke`, `max_days: 3`, `crop: [34, 66, 34, 66]`
-(32×32), `hidden_dim: 16`, `refine_channels: 16`, `batch_size: 8`, `epochs: 3`, `amp: false`.
-
 ---
 
 ## 12. Command-line usage
@@ -480,7 +467,6 @@ so numbers, booleans, lists and `null` all work. Run commands from the project r
 | `python -m src.dataset --config ...` | build `tensor.npy` and `meta.json` |
 | `python -m src.train --config ...` | train and save the best checkpoint |
 | `python -m src.evaluate --config ... [--checkpoint ...]` | metrics and plots |
-| `python scripts/make_synthetic_data.py --out DIR --days N [--start 2013-11-01 --grid 100 --seed 0]` | synthetic raw files |
 
 Examples:
 
@@ -495,9 +481,6 @@ python -m src.train --config configs/default.yaml --set data.log_transform=true 
 # quick check on the first week of real data, on a sub-grid
 python -m src.dataset --config configs/default.yaml --set data.max_days=7
 python -m src.train   --config configs/default.yaml --set data.crop=[30,70,30,70] training.epochs=5
-
-# smoke test on the real data instead of synthetic
-python -m src.dataset --config configs/smoke.yaml --set paths.raw_dir=data/raw paths.processed_dir=data/processed
 ```
 
 Remember to pass the same `--set` overrides (at least `paths.output_dir`) to `src.evaluate` that
@@ -533,7 +516,7 @@ Test-set results, in original units:
 | *ConvLSTM vs window mean* | *−18.3%* | *−12.0%* | *−1.2%* |
 
 The ConvLSTM beats both baselines on all three metrics. Persistence is the stronger baseline
-here (unlike on the synthetic data), as expected for real 10-minute traffic.
+here, as expected for real 10-minute traffic.
 
 Observations:
 
@@ -545,61 +528,6 @@ Observations:
 - **The normalised losses are very small (~1e-6).** Min-max scaling with a few very busy cells
   pushes most values close to 0. This is the main motivation for trying
   `data.log_transform: true` next.
-
-### Synthetic data: smoke test and verification
-
-The results in the rest of this section come from **synthetic data** (`scripts/make_synthetic_data.py`). It has 12
-Gaussian traffic hotspots scaled by a daily cycle, with lognormal noise. Like the real data, it
-has extra country-code rows, empty fields for tiny values, and about 3% of rows dropped.
-
-### Correctness checks
-
-- **Values:** a spot check of one (time, cell) internet value matched the raw file exactly
-  (6.6311 = 6.6311), and the day total of the tensor matched a direct pandas groupby.
-- **Timezone:** epoch `1383260400000` ms (2013-10-31 23:00 UTC) maps to 2013-11-01 00:00 Milan
-  time, which is time index 0.
-- **Forward fill:** `ffill_zero` leaves 0 NaNs. Zero cells go from 15.9% (zero-fill) to 3.0%
-  (forward-fill) on day 1.
-- **Model shapes:** `(2, 6, 5, 20, 24)` → `(2, 3, 2, 20, 24)` with per-layer hidden sizes
-  `[8, 12]`, refinement and residual on. The backward pass works.
-- **Splits:** 3 days = 432 steps, giving 296 / 58 / 60 train / val / test windows.
-
-### Smoke run (`configs/smoke.yaml`, 3 epochs, artefacts in `outputs/smoke/`)
-
-| Epoch | Train loss | Val loss | Time |
-|---|---|---|---|
-| 1 | 0.002776 | 0.001553 | 3.7 s |
-| 2 | 0.000487 | **0.000580** (best) | 3.5 s |
-| 3 | 0.000387 | 0.000640 | 3.5 s |
-
-| Model | RMSE | MAE | MAPE % |
-|---|---|---|---|
-| ConvLSTM (3 epochs, undertrained) | 19.36 | 10.68 | 60.96 |
-| Persistence | 19.95 | 9.67 | 33.61 |
-| WindowMean | 16.44 | 8.03 | 28.22 |
-
-### Ablations (same smoke setup, 12 epochs)
-
-| Setting | ConvLSTM RMSE | MAE | MAPE % |
-|---|---|---|---|
-| `residual: false` (current default) | **15.07** | 7.60 | 29.55 |
-| `log_transform: true`, `residual: true` | 15.25 | **7.20** | **22.60** |
-| `log_transform: true`, `residual: false` | **14.94** | 7.31 | 26.22 |
-| `residual: true`, plain min-max | 20.4: stuck at the persistence level | | |
-| Persistence / WindowMean (reference) | 19.95 / 16.44 | 9.67 / 8.03 | 33.61 / 28.22 |
-
-A 20-epoch run with `t_out=3` and all five input channels also confirmed that metrics are
-reported per horizon. That run used the old `residual: true` setting, which stalled at the
-persistence level (RMSE ~20).
-
-**Takeaways:**
-
-- Trained for 12 epochs, the ConvLSTM beats both baselines on RMSE and MAE.
-- The residual mode stalls with plain min-max scaling, so it is off by default.
-- `log1p` scaling improves MAPE.
-- On synthetic data the window mean is a strong baseline, because the noise is independent at
-  every step. These numbers show the pipeline learns; they do **not** predict real-data
-  performance.
 
 ---
 

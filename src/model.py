@@ -183,7 +183,7 @@ class ConvLSTMForecaster(nn.Module):
         residual_channels: Optional positions, within the *input* channels, of each target channel.
             When given, the network predicts the change from the last observed frame, i.e.
             ``y_hat = x[:, -1, residual_channels] + head(h_T)``. This is an optional experiment: in
-            smoke tests with plain min-max scaling it tended to stall at the persistence solution,
+            early tests with plain min-max scaling it tended to stall at the persistence solution,
             so it is off by default.
     """
 

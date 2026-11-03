@@ -108,16 +108,19 @@ time-series plot for one busy square, and the training loss curve.
 
 ## Where it stands
 
-- **Built and tested:** every part of the pipeline runs end to end. It was tested on synthetic
-  data in the exact raw format, made of fake traffic hotspots that follow a daily cycle with
-  random noise. After 12 epochs the ConvLSTM beat both baselines on RMSE (15.07 vs 19.95 for
-  persistence and 16.44 for the window mean).
-- **Not done yet:** it hasn't been run on the real Milano data, which needs to be downloaded
-  into `data/raw/`. Training on the full city grid also needs a GPU to be practical, and the
-  development machine only has a CPU.
+The model has been trained and tested on the **full real Milano data** (all 62 days, the whole
+100×100 grid) on a free Kaggle Tesla T4 GPU. Training took about 2 hours.
 
-The synthetic results only prove the pipeline works and the model can learn. How well it
-forecasts real Milan traffic will only be known after training on the real data.
+On the test period (Christmas and New Year 2013), the ConvLSTM beat both simple rules:
+
+| Model | RMSE | MAE | MAPE |
+|---|---|---|---|
+| **ConvLSTM** | **8.47** | **3.91** | **11.99%** |
+| Persistence | 9.39 | 4.33 | 12.56% |
+| Window mean | 10.37 | 4.44 | 12.13% |
+
+That is about **10% lower error than persistence**, the strongest baseline. The results, plots
+and logs are in `outputs/kaggle/`, and `PROJECT_REPORT.md` explains them in detail.
 
 ## Why it's a good project
 
