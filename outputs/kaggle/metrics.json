@@ -1,0 +1,76 @@
+{
+  "ConvLSTM": {
+    "overall": {
+      "RMSE": 8.474460718247954,
+      "MAE": 3.907077676726037,
+      "MAPE_%": 11.9872329165694
+    },
+    "per_horizon": [
+      {
+        "horizon": 1,
+        "RMSE": 8.474460718247954,
+        "MAE": 3.907077676726037,
+        "MAPE_%": 11.9872329165694
+      }
+    ],
+    "per_channel": {
+      "internet": {
+        "RMSE": 8.474460718247954,
+        "MAE": 3.907077676726037,
+        "MAPE_%": 11.9872329165694
+      }
+    }
+  },
+  "Persistence": {
+    "overall": {
+      "RMSE": 9.392239189655557,
+      "MAE": 4.334381387407019,
+      "MAPE_%": 12.561881004876472
+    },
+    "per_horizon": [
+      {
+        "horizon": 1,
+        "RMSE": 9.392239189655557,
+        "MAE": 4.334381387407019,
+        "MAPE_%": 12.561881004876472
+      }
+    ],
+    "per_channel": {
+      "internet": {
+        "RMSE": 9.392239189655557,
+        "MAE": 4.334381387407019,
+        "MAPE_%": 12.561881004876472
+      }
+    }
+  },
+  "WindowMean": {
+    "overall": {
+      "RMSE": 10.372669440440221,
+      "MAE": 4.439424839811583,
+      "MAPE_%": 12.127696056053486
+    },
+    "per_horizon": [
+      {
+        "horizon": 1,
+        "RMSE": 10.372669440440221,
+        "MAE": 4.439424839811583,
+        "MAPE_%": 12.127696056053486
+      }
+    ],
+    "per_channel": {
+      "internet": {
+        "RMSE": 10.372669440440221,
+        "MAE": 4.439424839811583,
+        "MAPE_%": 12.127696056053486
+      }
+    }
+  },
+  "notes": {
+    "units": "original dataset units (unitless activity counts)",
+    "mask_inactive": true,
+    "active_cells": 10000,
+    "mape_threshold": 1.0,
+    "test_windows": 1334,
+    "checkpoint": "/kaggle/working/outputs/convlstm_internet/best_model.pt"
+  }
+}

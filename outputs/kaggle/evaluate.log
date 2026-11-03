@@ -1,0 +1,9 @@
+2026-11-03 09:18:09 | INFO | Loaded /kaggle/working/outputs/convlstm_internet/best_model.pt (epoch 41, val loss 0.000002); 1334 test windows on cuda
+2026-11-03 09:18:29 | INFO | model        horizon         RMSE          MAE    MAPE %
+2026-11-03 09:18:29 | INFO | ConvLSTM           1       8.4745       3.9071     11.99
+2026-11-03 09:18:29 | INFO | Persistence        1       9.3922       4.3344     12.56
+2026-11-03 09:18:29 | INFO | WindowMean         1      10.3727       4.4394     12.13
+2026-11-03 09:18:29 | INFO | ConvLSTM     overall  RMSE 8.4745 | MAE 3.9071 | MAPE 11.99%
+2026-11-03 09:18:29 | INFO | Persistence  overall  RMSE 9.3922 | MAE 4.3344 | MAPE 12.56%
+2026-11-03 09:18:29 | INFO | WindowMean   overall  RMSE 10.3727 | MAE 4.4394 | MAPE 12.13%
+2026-11-03 09:18:30 | INFO | Metrics and plots written to /kaggle/working/outputs/convlstm_internet

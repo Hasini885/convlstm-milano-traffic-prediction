@@ -1,0 +1,75 @@
+{
+  "seed": 42,
+  "device": "auto",
+  "paths": {
+    "raw_dir": "/kaggle/input/datasets/dkgmgo/telecom-italia-milan/data",
+    "processed_dir": "/kaggle/temp/processed",
+    "output_dir": "/kaggle/working/outputs/convlstm_internet"
+  },
+  "data": {
+    "features": [
+      "smsin",
+      "smsout",
+      "callin",
+      "callout",
+      "internet"
+    ],
+    "input_features": [
+      "internet"
+    ],
+    "target_features": [
+      "internet"
+    ],
+    "interval_minutes": 10,
+    "grid_size": 100,
+    "max_days": null,
+    "fill_method": "zero",
+    "log_transform": false,
+    "mask_inactive": true,
+    "t_in": 6,
+    "t_out": 1,
+    "stride": 1,
+    "split": [
+      0.7,
+      0.15,
+      0.15
+    ],
+    "crop": null,
+    "num_workers": 2
+  },
+  "model": {
+    "hidden_dim": 64,
+    "num_layers": 2,
+    "kernel_size": [
+      3,
+      3
+    ],
+    "bias": true,
+    "refine_layers": 2,
+    "refine_channels": 32,
+    "residual": false
+  },
+  "training": {
+    "batch_size": 16,
+    "epochs": 100,
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "loss": "mse",
+    "huber_delta": 0.05,
+    "patience": 10,
+    "min_delta": 0.0,
+    "scheduler_patience": 5,
+    "scheduler_factor": 0.5,
+    "min_lr": 1e-06,
+    "grad_clip": 1.0,
+    "amp": true,
+    "max_hours": 8.5,
+    "max_train_batches": null,
+    "max_eval_batches": null
+  },
+  "evaluation": {
+    "mape_threshold": 1.0,
+    "num_plot_samples": 3,
+    "plot_cell": null
+  }
+}

@@ -1,0 +1,175 @@
+[{"stream_name":"stderr","time":6.753402357,"data":"/usr/local/lib/python3.13/dist-packages/nbformat/validator.py:434: MissingIDFieldWarning: Cell is missing an id field, this will become a hard error in future nbformat versions. You may want to use `normalize()` on your notebooks before validations (available since nbformat 5.1.4). Previous versions of nbformat are fixing this issue transparently, and will stop doing so in the future.\n"}
+,{"stream_name":"stderr","time":6.753442807,"data":"  _validate(nbdict, ref, version, version_minor, relax_add_props)\n"}
+,{"stream_name":"stderr","time":7.701649878,"data":"0.00s - Debugger warning: It seems that frozen modules are being used, which may\n"}
+,{"stream_name":"stderr","time":7.701681576,"data":"0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off\n"}
+,{"stream_name":"stderr","time":7.701687146,"data":"0.00s - to python to disable frozen modules.\n"}
+,{"stream_name":"stderr","time":7.7016913559999995,"data":"0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.\n"}
+,{"stream_name":"stderr","time":8.324101685,"data":"0.00s - Debugger warning: It seems that frozen modules are being used, which may\n"}
+,{"stream_name":"stderr","time":8.324134486,"data":"0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off\n"}
+,{"stream_name":"stderr","time":8.324151798,"data":"0.00s - to python to disable frozen modules.\n"}
+,{"stream_name":"stderr","time":8.324156144,"data":"0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.\n"}
+,{"stream_name":"stdout","time":16.749865658,"data":"torch 2.11.0+cu130 | CUDA: True | Tesla T4\n"}
+,{"stream_name":"stdout","time":16.749891456,"data":"/kaggle/working: 20.9 GB free\n"}
+,{"stream_name":"stdout","time":16.749895684,"data":"/kaggle/temp: 1038.2 GB free\n"}
+,{"stream_name":"stdout","time":23.59314862,"data":"Project copied to /kaggle/working/convlstm_milano -\u003e ['PROJECT_OVERVIEW.md', 'README.md', 'configs', 'kaggle', 'requirements.txt', 'scripts', 'src']\n"}
+,{"stream_name":"stdout","time":23.593177864,"data":"62 raw files in /kaggle/input/datasets/dkgmgo/telecom-italia-milan/data\n"}
+,{"stream_name":"stdout","time":23.593183252,"data":"first: sms-call-internet-mi-2013-11-01.txt | last: sms-call-internet-mi-2014-01-01.txt\n"}
+,{"stream_name":"stdout","time":34.822385713,"data":"1,439,982 (time, cell) records in the first file; time step = 10 min; 10,000 distinct cells\n"}
+,{"stream_name":"stdout","time":34.841048318,"data":"$ python -m src.dataset --config configs/kaggle.yaml --set paths.raw_dir=/kaggle/input/datasets/dkgmgo/telecom-italia-milan/data data.interval_minutes=10\n"}
+,{"stream_name":"stdout","time":36.733986627,"data":"2026-11-03 07:01:48 | INFO | Building tensor (8928, 5, 100, 100) from 62 files [2013-11-01 .. 2014-01-01] -\u003e /kaggle/temp/processed/tensor.npy\n"}
+,{"stream_name":"stdout","time":43.12409238,"data":"2026-11-03 07:01:55 | INFO |   [1/62] sms-call-internet-mi-2013-11-01.txt: 1,439,982 (time, cell) records\n"}
+,{"stream_name":"stdout","time":53.165386881,"data":"2026-11-03 07:02:05 | INFO |   [2/62] sms-call-internet-mi-2013-11-02.txt: 1,439,986 (time, cell) records\n"}
+,{"stream_name":"stdout","time":64.573606314,"data":"2026-11-03 07:02:16 | INFO |   [3/62] sms-call-internet-mi-2013-11-03.txt: 1,439,963 (time, cell) records\n"}
+,{"stream_name":"stdout","time":76.737153995,"data":"2026-11-03 07:02:28 | INFO |   [4/62] sms-call-internet-mi-2013-11-04.txt: 1,439,976 (time, cell) records\n"}
+,{"stream_name":"stdout","time":88.522214312,"data":"2026-11-03 07:02:40 | INFO |   [5/62] sms-call-internet-mi-2013-11-05.txt: 1,439,977 (time, cell) records\n"}
+,{"stream_name":"stdout","time":100.144183785,"data":"2026-11-03 07:02:52 | INFO |   [6/62] sms-call-internet-mi-2013-11-06.txt: 1,439,980 (time, cell) records\n"}
+,{"stream_name":"stdout","time":112.470085667,"data":"2026-11-03 07:03:04 | INFO |   [7/62] sms-call-internet-mi-2013-11-07.txt: 1,439,981 (time, cell) records\n"}
+,{"stream_name":"stdout","time":125.541917144,"data":"2026-11-03 07:03:17 | INFO |   [8/62] sms-call-internet-mi-2013-11-08.txt: 1,439,976 (time, cell) records\n"}
+,{"stream_name":"stdout","time":136.858146446,"data":"2026-11-03 07:03:28 | INFO |   [9/62] sms-call-internet-mi-2013-11-09.txt: 1,439,978 (time, cell) records\n"}
+,{"stream_name":"stdout","time":147.271670239,"data":"2026-11-03 07:03:39 | INFO |   [10/62] sms-call-internet-mi-2013-11-10.txt: 1,439,983 (time, cell) records\n"}
+,{"stream_name":"stdout","time":159.223542428,"data":"2026-11-03 07:03:51 | INFO |   [11/62] sms-call-internet-mi-2013-11-11.txt: 1,439,985 (time, cell) records\n"}
+,{"stream_name":"stdout","time":170.863034948,"data":"2026-11-03 07:04:02 | INFO |   [12/62] sms-call-internet-mi-2013-11-12.txt: 1,439,975 (time, cell) records\n"}
+,{"stream_name":"stdout","time":182.033739343,"data":"2026-11-03 07:04:13 | INFO |   [13/62] sms-call-internet-mi-2013-11-13.txt: 1,439,975 (time, cell) records\n"}
+,{"stream_name":"stdout","time":192.912687733,"data":"2026-11-03 07:04:24 | INFO |   [14/62] sms-call-internet-mi-2013-11-14.txt: 1,439,975 (time, cell) records\n"}
+,{"stream_name":"stdout","time":204.326609088,"data":"2026-11-03 07:04:36 | INFO |   [15/62] sms-call-internet-mi-2013-11-15.txt: 1,439,971 (time, cell) records\n"}
+,{"stream_name":"stdout","time":214.43968406,"data":"2026-11-03 07:04:46 | INFO |   [16/62] sms-call-internet-mi-2013-11-16.txt: 1,439,967 (time, cell) records\n"}
+,{"stream_name":"stdout","time":224.399631581,"data":"2026-11-03 07:04:56 | INFO |   [17/62] sms-call-internet-mi-2013-11-17.txt: 1,439,970 (time, cell) records\n"}
+,{"stream_name":"stdout","time":235.373938717,"data":"2026-11-03 07:05:07 | INFO |   [18/62] sms-call-internet-mi-2013-11-18.txt: 1,439,970 (time, cell) records\n"}
+,{"stream_name":"stdout","time":246.392802147,"data":"2026-11-03 07:05:18 | INFO |   [19/62] sms-call-internet-mi-2013-11-19.txt: 1,439,979 (time, cell) records\n"}
+,{"stream_name":"stdout","time":257.496965291,"data":"2026-11-03 07:05:29 | INFO |   [20/62] sms-call-internet-mi-2013-11-20.txt: 1,439,967 (time, cell) records\n"}
+,{"stream_name":"stdout","time":269.181554656,"data":"2026-11-03 07:05:41 | INFO |   [21/62] sms-call-internet-mi-2013-11-21.txt: 1,439,974 (time, cell) records\n"}
+,{"stream_name":"stdout","time":280.47445671,"data":"2026-11-03 07:05:52 | INFO |   [22/62] sms-call-internet-mi-2013-11-22.txt: 1,439,974 (time, cell) records\n"}
+,{"stream_name":"stdout","time":291.220427994,"data":"2026-11-03 07:06:03 | INFO |   [23/62] sms-call-internet-mi-2013-11-23.txt: 1,439,872 (time, cell) records\n"}
+,{"stream_name":"stdout","time":302.134978941,"data":"2026-11-03 07:06:14 | INFO |   [24/62] sms-call-internet-mi-2013-11-24.txt: 1,439,830 (time, cell) records\n"}
+,{"stream_name":"stdout","time":312.899914421,"data":"2026-11-03 07:06:24 | INFO |   [25/62] sms-call-internet-mi-2013-11-25.txt: 1,439,817 (time, cell) records\n"}
+,{"stream_name":"stdout","time":324.28936267,"data":"2026-11-03 07:06:36 | INFO |   [26/62] sms-call-internet-mi-2013-11-26.txt: 1,439,610 (time, cell) records\n"}
+,{"stream_name":"stdout","time":336.207981519,"data":"2026-11-03 07:06:48 | INFO |   [27/62] sms-call-internet-mi-2013-11-27.txt: 1,439,817 (time, cell) records\n"}
+,{"stream_name":"stdout","time":347.611451201,"data":"2026-11-03 07:06:59 | INFO |   [28/62] sms-call-internet-mi-2013-11-28.txt: 1,439,739 (time, cell) records\n"}
+,{"stream_name":"stdout","time":359.719554909,"data":"2026-11-03 07:07:11 | INFO |   [29/62] sms-call-internet-mi-2013-11-29.txt: 1,439,550 (time, cell) records\n"}
+,{"stream_name":"stdout","time":371.107709597,"data":"2026-11-03 07:07:23 | INFO |   [30/62] sms-call-internet-mi-2013-11-30.txt: 1,439,540 (time, cell) records\n"}
+,{"stream_name":"stdout","time":381.919423138,"data":"2026-11-03 07:07:33 | INFO |   [31/62] sms-call-internet-mi-2013-12-01.txt: 1,439,342 (time, cell) records\n"}
+,{"stream_name":"stdout","time":392.506803396,"data":"2026-11-03 07:07:44 | INFO |   [32/62] sms-call-internet-mi-2013-12-02.txt: 1,439,537 (time, cell) records\n"}
+,{"stream_name":"stdout","time":403.180573036,"data":"2026-11-03 07:07:55 | INFO |   [33/62] sms-call-internet-mi-2013-12-03.txt: 1,439,327 (time, cell) records\n"}
+,{"stream_name":"stdout","time":414.525296173,"data":"2026-11-03 07:08:06 | INFO |   [34/62] sms-call-internet-mi-2013-12-04.txt: 1,439,408 (time, cell) records\n"}
+,{"stream_name":"stdout","time":425.212908444,"data":"2026-11-03 07:08:17 | INFO |   [35/62] sms-call-internet-mi-2013-12-05.txt: 1,439,287 (time, cell) records\n"}
+,{"stream_name":"stdout","time":436.019932678,"data":"2026-11-03 07:08:27 | INFO |   [36/62] sms-call-internet-mi-2013-12-06.txt: 1,439,286 (time, cell) records\n"}
+,{"stream_name":"stdout","time":446.435269492,"data":"2026-11-03 07:08:38 | INFO |   [37/62] sms-call-internet-mi-2013-12-07.txt: 1,439,203 (time, cell) records\n"}
+,{"stream_name":"stdout","time":456.382027948,"data":"2026-11-03 07:08:48 | INFO |   [38/62] sms-call-internet-mi-2013-12-08.txt: 1,439,000 (time, cell) records\n"}
+,{"stream_name":"stdout","time":466.959313418,"data":"2026-11-03 07:08:58 | INFO |   [39/62] sms-call-internet-mi-2013-12-09.txt: 1,439,293 (time, cell) records\n"}
+,{"stream_name":"stdout","time":477.924816335,"data":"2026-11-03 07:09:09 | INFO |   [40/62] sms-call-internet-mi-2013-12-10.txt: 1,439,162 (time, cell) records\n"}
+,{"stream_name":"stdout","time":488.824394057,"data":"2026-11-03 07:09:20 | INFO |   [41/62] sms-call-internet-mi-2013-12-11.txt: 1,439,235 (time, cell) records\n"}
+,{"stream_name":"stdout","time":500.474110009,"data":"2026-11-03 07:09:32 | INFO |   [42/62] sms-call-internet-mi-2013-12-12.txt: 1,439,252 (time, cell) records\n"}
+,{"stream_name":"stdout","time":511.359380521,"data":"2026-11-03 07:09:43 | INFO |   [43/62] sms-call-internet-mi-2013-12-13.txt: 1,439,293 (time, cell) records\n"}
+,{"stream_name":"stdout","time":521.160078158,"data":"2026-11-03 07:09:53 | INFO |   [44/62] sms-call-internet-mi-2013-12-14.txt: 1,439,212 (time, cell) records\n"}
+,{"stream_name":"stdout","time":531.028089912,"data":"2026-11-03 07:10:02 | INFO |   [45/62] sms-call-internet-mi-2013-12-15.txt: 1,438,921 (time, cell) records\n"}
+,{"stream_name":"stdout","time":541.85541445,"data":"2026-11-03 07:10:13 | INFO |   [46/62] sms-call-internet-mi-2013-12-16.txt: 1,439,258 (time, cell) records\n"}
+,{"stream_name":"stdout","time":552.846225544,"data":"2026-11-03 07:10:24 | INFO |   [47/62] sms-call-internet-mi-2013-12-17.txt: 1,439,276 (time, cell) records\n"}
+,{"stream_name":"stdout","time":563.602290059,"data":"2026-11-03 07:10:35 | INFO |   [48/62] sms-call-internet-mi-2013-12-18.txt: 1,439,259 (time, cell) records\n"}
+,{"stream_name":"stdout","time":575.155392945,"data":"2026-11-03 07:10:47 | INFO |   [49/62] sms-call-internet-mi-2013-12-19.txt: 1,439,277 (time, cell) records\n"}
+,{"stream_name":"stdout","time":586.4009308,"data":"2026-11-03 07:10:58 | INFO |   [50/62] sms-call-internet-mi-2013-12-20.txt: 1,439,174 (time, cell) records\n"}
+,{"stream_name":"stdout","time":596.641289675,"data":"2026-11-03 07:11:08 | INFO |   [51/62] sms-call-internet-mi-2013-12-21.txt: 1,439,078 (time, cell) records\n"}
+,{"stream_name":"stdout","time":607.891474257,"data":"2026-11-03 07:11:19 | INFO |   [52/62] sms-call-internet-mi-2013-12-22.txt: 1,438,633 (time, cell) records\n"}
+,{"stream_name":"stdout","time":618.324242977,"data":"2026-11-03 07:11:30 | INFO |   [53/62] sms-call-internet-mi-2013-12-23.txt: 1,439,058 (time, cell) records\n"}
+,{"stream_name":"stdout","time":628.95485062,"data":"2026-11-03 07:11:40 | INFO |   [54/62] sms-call-internet-mi-2013-12-24.txt: 1,438,931 (time, cell) records\n"}
+,{"stream_name":"stdout","time":640.429481698,"data":"2026-11-03 07:11:52 | INFO |   [55/62] sms-call-internet-mi-2013-12-25.txt: 1,438,118 (time, cell) records\n"}
+,{"stream_name":"stdout","time":650.118121637,"data":"2026-11-03 07:12:02 | INFO |   [56/62] sms-call-internet-mi-2013-12-26.txt: 1,437,733 (time, cell) records\n"}
+,{"stream_name":"stdout","time":659.964708162,"data":"2026-11-03 07:12:11 | INFO |   [57/62] sms-call-internet-mi-2013-12-27.txt: 1,438,605 (time, cell) records\n"}
+,{"stream_name":"stdout","time":669.346798452,"data":"2026-11-03 07:12:21 | INFO |   [58/62] sms-call-internet-mi-2013-12-28.txt: 1,438,737 (time, cell) records\n"}
+,{"stream_name":"stdout","time":678.527860115,"data":"2026-11-03 07:12:30 | INFO |   [59/62] sms-call-internet-mi-2013-12-29.txt: 1,438,004 (time, cell) records\n"}
+,{"stream_name":"stdout","time":689.504391484,"data":"2026-11-03 07:12:41 | INFO |   [60/62] sms-call-internet-mi-2013-12-30.txt: 1,438,743 (time, cell) records\n"}
+,{"stream_name":"stdout","time":700.018977362,"data":"2026-11-03 07:12:51 | INFO |   [61/62] sms-call-internet-mi-2013-12-31.txt: 1,438,736 (time, cell) records\n"}
+,{"stream_name":"stdout","time":710.509126764,"data":"2026-11-03 07:13:02 | INFO |   [62/62] sms-call-internet-mi-2014-01-01.txt: 1,438,701 (time, cell) records\n"}
+,{"stream_name":"stdout","time":710.782192192,"data":"2026-11-03 07:13:02 | INFO | Done. Metadata written to /kaggle/temp/processed/meta.json\n"}
+,{"stream_name":"stdout","time":713.890789451,"data":"tensor shape (T, C, H, W): [8928, 5, 100, 100] | features: ['smsin', 'smsout', 'callin', 'callout', 'internet']\n"}
+,{"stream_name":"stdout","time":713.890848883,"data":"days: 2013-11-01 -\u003e 2014-01-01 (62 days)\n"}
+,{"stream_name":"stdout","time":713.911691463,"data":"$ python -m src.train --config configs/kaggle.yaml --set paths.raw_dir=/kaggle/input/datasets/dkgmgo/telecom-italia-milan/data data.interval_minutes=10\n"}
+,{"stream_name":"stdout","time":717.801629886,"data":"2026-11-03 07:13:09 | INFO | Device: cuda | windows train/val/test = 6243/1333/1334\n"}
+,{"stream_name":"stdout","time":717.888663003,"data":"2026-11-03 07:13:09 | INFO | Loss mask: 10000/10000 cells active in the training period\n"}
+,{"stream_name":"stdout","time":717.94517513,"data":"2026-11-03 07:13:09 | INFO | Model: 464,290 parameters\n"}
+,{"stream_name":"stdout","time":864.238718057,"data":"2026-11-03 07:15:36 | INFO | Epoch   1 | train 0.000057 | val 0.000005 | lr 1.00e-03 | 141.0s  * saved best\n"}
+,{"stream_name":"stdout","time":1010.1901786,"data":"2026-11-03 07:18:02 | INFO | Epoch   2 | train 0.000008 | val 0.000002 | lr 1.00e-03 | 146.0s  * saved best\n"}
+,{"stream_name":"stdout","time":1156.049577945,"data":"2026-11-03 07:20:28 | INFO | Epoch   3 | train 0.000007 | val 0.000003 | lr 1.00e-03 | 145.9s\n"}
+,{"stream_name":"stdout","time":1301.809102608,"data":"2026-11-03 07:22:53 | INFO | Epoch   4 | train 0.000007 | val 0.000003 | lr 1.00e-03 | 145.8s\n"}
+,{"stream_name":"stdout","time":1447.676560372,"data":"2026-11-03 07:25:19 | INFO | Epoch   5 | train 0.000007 | val 0.000002 | lr 1.00e-03 | 145.9s  * saved best\n"}
+,{"stream_name":"stdout","time":1593.415917237,"data":"2026-11-03 07:27:45 | INFO | Epoch   6 | train 0.000007 | val 0.000002 | lr 1.00e-03 | 145.7s\n"}
+,{"stream_name":"stdout","time":1739.303215684,"data":"2026-11-03 07:30:11 | INFO | Epoch   7 | train 0.000007 | val 0.000002 | lr 1.00e-03 | 145.9s  * saved best\n"}
+,{"stream_name":"stdout","time":1885.078368184,"data":"2026-11-03 07:32:37 | INFO | Epoch   8 | train 0.000007 | val 0.000003 | lr 1.00e-03 | 145.8s\n"}
+,{"stream_name":"stdout","time":2030.828159457,"data":"2026-11-03 07:35:02 | INFO | Epoch   9 | train 0.000007 | val 0.000002 | lr 1.00e-03 | 145.7s  * saved best\n"}
+,{"stream_name":"stdout","time":2176.627249632,"data":"2026-11-03 07:37:28 | INFO | Epoch  10 | train 0.000007 | val 0.000002 | lr 1.00e-03 | 145.8s\n"}
+,{"stream_name":"stdout","time":2322.438091341,"data":"2026-11-03 07:39:54 | INFO | Epoch  11 | train 0.000007 | val 0.000002 | lr 1.00e-03 | 145.8s\n"}
+,{"stream_name":"stdout","time":2468.264288763,"data":"2026-11-03 07:42:20 | INFO | Epoch  12 | train 0.000007 | val 0.000002 | lr 1.00e-03 | 145.8s\n"}
+,{"stream_name":"stdout","time":2614.123248594,"data":"2026-11-03 07:44:46 | INFO | Epoch  13 | train 0.000007 | val 0.000002 | lr 1.00e-03 | 145.9s  * saved best\n"}
+,{"stream_name":"stdout","time":2759.877762027,"data":"2026-11-03 07:47:11 | INFO | Epoch  14 | train 0.000007 | val 0.000002 | lr 1.00e-03 | 145.8s\n"}
+,{"stream_name":"stdout","time":2905.748556859,"data":"2026-11-03 07:49:37 | INFO | Epoch  15 | train 0.000006 | val 0.000002 | lr 1.00e-03 | 145.9s\n"}
+,{"stream_name":"stdout","time":3051.611703775,"data":"2026-11-03 07:52:03 | INFO | Epoch  16 | train 0.000007 | val 0.000002 | lr 1.00e-03 | 145.9s\n"}
+,{"stream_name":"stdout","time":3197.436262902,"data":"2026-11-03 07:54:29 | INFO | Epoch  17 | train 0.000006 | val 0.000002 | lr 1.00e-03 | 145.8s\n"}
+,{"stream_name":"stdout","time":3343.338942034,"data":"2026-11-03 07:56:55 | INFO | Epoch  18 | train 0.000006 | val 0.000002 | lr 1.00e-03 | 145.9s\n"}
+,{"stream_name":"stdout","time":3489.150147663,"data":"2026-11-03 07:59:21 | INFO | Epoch  19 | train 0.000006 | val 0.000002 | lr 5.00e-04 | 145.8s\n"}
+,{"stream_name":"stdout","time":3635.063058544,"data":"2026-11-03 08:01:47 | INFO | Epoch  20 | train 0.000006 | val 0.000002 | lr 5.00e-04 | 145.9s  * saved best\n"}
+,{"stream_name":"stdout","time":3781.254383177,"data":"2026-11-03 08:04:13 | INFO | Epoch  21 | train 0.000006 | val 0.000002 | lr 5.00e-04 | 146.2s  * saved best\n"}
+,{"stream_name":"stdout","time":3927.57263878,"data":"2026-11-03 08:06:39 | INFO | Epoch  22 | train 0.000006 | val 0.000002 | lr 5.00e-04 | 146.3s\n"}
+,{"stream_name":"stdout","time":4073.760852796,"data":"2026-11-03 08:09:05 | INFO | Epoch  23 | train 0.000006 | val 0.000002 | lr 5.00e-04 | 146.2s\n"}
+,{"stream_name":"stdout","time":4219.879918969,"data":"2026-11-03 08:11:31 | INFO | Epoch  24 | train 0.000006 | val 0.000002 | lr 5.00e-04 | 146.1s  * saved best\n"}
+,{"stream_name":"stdout","time":4365.964810424,"data":"2026-11-03 08:13:57 | INFO | Epoch  25 | train 0.000006 | val 0.000002 | lr 5.00e-04 | 146.1s\n"}
+,{"stream_name":"stdout","time":4512.265225378,"data":"2026-11-03 08:16:24 | INFO | Epoch  26 | train 0.000006 | val 0.000002 | lr 5.00e-04 | 146.3s\n"}
+,{"stream_name":"stdout","time":4658.715554177,"data":"2026-11-03 08:18:50 | INFO | Epoch  27 | train 0.000006 | val 0.000002 | lr 5.00e-04 | 146.4s  * saved best\n"}
+,{"stream_name":"stdout","time":4805.130864137,"data":"2026-11-03 08:21:17 | INFO | Epoch  28 | train 0.000006 | val 0.000002 | lr 5.00e-04 | 146.4s\n"}
+,{"stream_name":"stdout","time":4951.73293885,"data":"2026-11-03 08:23:43 | INFO | Epoch  29 | train 0.000006 | val 0.000002 | lr 5.00e-04 | 146.6s\n"}
+,{"stream_name":"stdout","time":5098.053127241,"data":"2026-11-03 08:26:10 | INFO | Epoch  30 | train 0.000006 | val 0.000002 | lr 5.00e-04 | 146.3s\n"}
+,{"stream_name":"stdout","time":5244.743971065,"data":"2026-11-03 08:28:36 | INFO | Epoch  31 | train 0.000006 | val 0.000002 | lr 5.00e-04 | 146.7s\n"}
+,{"stream_name":"stdout","time":5392.049662367,"data":"2026-11-03 08:31:04 | INFO | Epoch  32 | train 0.000006 | val 0.000002 | lr 5.00e-04 | 147.3s\n"}
+,{"stream_name":"stdout","time":5539.594614792,"data":"2026-11-03 08:33:31 | INFO | Epoch  33 | train 0.000006 | val 0.000002 | lr 2.50e-04 | 147.5s\n"}
+,{"stream_name":"stdout","time":5687.233109184,"data":"2026-11-03 08:35:59 | INFO | Epoch  34 | train 0.000006 | val 0.000002 | lr 2.50e-04 | 147.6s  * saved best\n"}
+,{"stream_name":"stdout","time":5835.047659864,"data":"2026-11-03 08:38:26 | INFO | Epoch  35 | train 0.000006 | val 0.000002 | lr 2.50e-04 | 147.8s\n"}
+,{"stream_name":"stdout","time":5982.745012042,"data":"2026-11-03 08:40:54 | INFO | Epoch  36 | train 0.000006 | val 0.000002 | lr 2.50e-04 | 147.7s\n"}
+,{"stream_name":"stdout","time":6130.570904669,"data":"2026-11-03 08:43:22 | INFO | Epoch  37 | train 0.000006 | val 0.000002 | lr 2.50e-04 | 147.8s\n"}
+,{"stream_name":"stdout","time":6277.91152537,"data":"2026-11-03 08:45:49 | INFO | Epoch  38 | train 0.000006 | val 0.000002 | lr 2.50e-04 | 147.3s\n"}
+,{"stream_name":"stdout","time":6426.213941085,"data":"2026-11-03 08:48:18 | INFO | Epoch  39 | train 0.000006 | val 0.000002 | lr 2.50e-04 | 148.3s  * saved best\n"}
+,{"stream_name":"stdout","time":6574.538381476,"data":"2026-11-03 08:50:46 | INFO | Epoch  40 | train 0.000006 | val 0.000002 | lr 2.50e-04 | 148.3s\n"}
+,{"stream_name":"stdout","time":6722.849262147,"data":"2026-11-03 08:53:14 | INFO | Epoch  41 | train 0.000006 | val 0.000002 | lr 2.50e-04 | 148.3s  * saved best\n"}
+,{"stream_name":"stdout","time":6871.68003505,"data":"2026-11-03 08:55:43 | INFO | Epoch  42 | train 0.000006 | val 0.000002 | lr 2.50e-04 | 148.8s\n"}
+,{"stream_name":"stdout","time":7020.538959209,"data":"2026-11-03 08:58:12 | INFO | Epoch  43 | train 0.000006 | val 0.000002 | lr 2.50e-04 | 148.9s\n"}
+,{"stream_name":"stdout","time":7169.168120651,"data":"2026-11-03 09:00:41 | INFO | Epoch  44 | train 0.000006 | val 0.000002 | lr 2.50e-04 | 148.6s\n"}
+,{"stream_name":"stdout","time":7318.142691966,"data":"2026-11-03 09:03:10 | INFO | Epoch  45 | train 0.000006 | val 0.000002 | lr 2.50e-04 | 149.0s\n"}
+,{"stream_name":"stdout","time":7466.857090061,"data":"2026-11-03 09:05:38 | INFO | Epoch  46 | train 0.000006 | val 0.000002 | lr 2.50e-04 | 148.7s\n"}
+,{"stream_name":"stdout","time":7615.980986687,"data":"2026-11-03 09:08:07 | INFO | Epoch  47 | train 0.000006 | val 0.000002 | lr 1.25e-04 | 149.1s\n"}
+,{"stream_name":"stdout","time":7764.860414982,"data":"2026-11-03 09:10:36 | INFO | Epoch  48 | train 0.000006 | val 0.000002 | lr 1.25e-04 | 148.9s\n"}
+,{"stream_name":"stdout","time":7913.60262054,"data":"2026-11-03 09:13:05 | INFO | Epoch  49 | train 0.000006 | val 0.000002 | lr 1.25e-04 | 148.7s\n"}
+,{"stream_name":"stdout","time":8062.205238622,"data":"2026-11-03 09:15:34 | INFO | Epoch  50 | train 0.000006 | val 0.000002 | lr 1.25e-04 | 148.6s\n"}
+,{"stream_name":"stdout","time":8210.818743555,"data":"2026-11-03 09:18:02 | INFO | Epoch  51 | train 0.000006 | val 0.000002 | lr 1.25e-04 | 148.6s\n"}
+,{"stream_name":"stdout","time":8210.819796491,"data":"2026-11-03 09:18:02 | INFO | Early stopping: no val improvement for 10 epochs\n"}
+,{"stream_name":"stdout","time":8210.82068403,"data":"2026-11-03 09:18:02 | INFO | Best val loss 0.000002; checkpoint: /kaggle/working/outputs/convlstm_internet/best_model.pt\n"}
+,{"stream_name":"stdout","time":8213.924684719,"data":"$ python -m src.evaluate --config configs/kaggle.yaml --set paths.raw_dir=/kaggle/input/datasets/dkgmgo/telecom-italia-milan/data data.interval_minutes=10\n"}
+,{"stream_name":"stdout","time":8217.966318159,"data":"2026-11-03 09:18:09 | INFO | Loaded /kaggle/working/outputs/convlstm_internet/best_model.pt (epoch 41, val loss 0.000002); 1334 test windows on cuda\n"}
+,{"stream_name":"stdout","time":8237.041806037,"data":"2026-11-03 09:18:29 | INFO | model        horizon         RMSE          MAE    MAPE %\n"}
+,{"stream_name":"stdout","time":8237.042236434,"data":"2026-11-03 09:18:29 | INFO | ConvLSTM           1       8.4745       3.9071     11.99\n"}
+,{"stream_name":"stdout","time":8237.043101785,"data":"2026-11-03 09:18:29 | INFO | Persistence        1       9.3922       4.3344     12.56\n"}
+,{"stream_name":"stdout","time":8237.043911231,"data":"2026-11-03 09:18:29 | INFO | WindowMean         1      10.3727       4.4394     12.13\n"}
+,{"stream_name":"stdout","time":8237.044944751,"data":"2026-11-03 09:18:29 | INFO | ConvLSTM     overall  RMSE 8.4745 | MAE 3.9071 | MAPE 11.99%\n"}
+,{"stream_name":"stdout","time":8237.045928734,"data":"2026-11-03 09:18:29 | INFO | Persistence  overall  RMSE 9.3922 | MAE 4.3344 | MAPE 12.56%\n"}
+,{"stream_name":"stdout","time":8237.046952327,"data":"2026-11-03 09:18:29 | INFO | WindowMean   overall  RMSE 10.3727 | MAE 4.4394 | MAPE 12.13%\n"}
+,{"stream_name":"stdout","time":8238.458144139,"data":"2026-11-03 09:18:30 | INFO | Metrics and plots written to /kaggle/working/outputs/convlstm_internet\n"}
+,{"stream_name":"stdout","time":8249.32071904,"data":"{\n"}
+,{"stream_name":"stdout","time":8249.320777911,"data":"  \"units\": \"original dataset units (unitless activity counts)\",\n"}
+,{"stream_name":"stdout","time":8249.320784895,"data":"  \"mask_inactive\": true,\n"}
+,{"stream_name":"stdout","time":8249.32078956,"data":"  \"active_cells\": 10000,\n"}
+,{"stream_name":"stdout","time":8249.320794262,"data":"  \"mape_threshold\": 1.0,\n"}
+,{"stream_name":"stdout","time":8249.320799134,"data":"  \"test_windows\": 1334,\n"}
+,{"stream_name":"stdout","time":8249.320803645,"data":"  \"checkpoint\": \"/kaggle/working/outputs/convlstm_internet/best_model.pt\"\n"}
+,{"stream_name":"stdout","time":8249.320808189,"data":"}\n"}
+,{"stream_name":"stdout","time":8249.34362783,"data":"loss_curve.png\n"}
+,{"stream_name":"stdout","time":8249.347510131,"data":"heatmaps.png\n"}
+,{"stream_name":"stdout","time":8249.363797014,"data":"cell_timeseries.png\n"}
+,{"stream_name":"stderr","time":8252.628302812,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":8252.628352941,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":8252.807907775,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":8252.80795787,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":8253.578952206,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to notebook\n"}
+,{"stream_name":"stderr","time":8253.680654133,"data":"[NbConvertApp] Writing 739328 bytes to __notebook__.ipynb\n"}
+,{"stream_name":"stderr","time":8256.106086638,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to html\n"}
+,{"stream_name":"stderr","time":8256.658964966,"data":"[NbConvertApp] Support files will be in __results___files/\n"}
+,{"stream_name":"stderr","time":8256.659016591,"data":"[NbConvertApp] Making directory __results___files\n"}
+,{"stream_name":"stderr","time":8256.659383372,"data":"[NbConvertApp] Making directory __results___files\n"}
+,{"stream_name":"stderr","time":8256.659709499,"data":"[NbConvertApp] Making directory __results___files\n"}
+,{"stream_name":"stderr","time":8256.660032165,"data":"[NbConvertApp] Writing 323085 bytes to __results__.html\n"}
+]

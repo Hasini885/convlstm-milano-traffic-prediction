@@ -21,7 +21,7 @@ visualisation.
 10. [Evaluation, metrics and baselines](#10-evaluation-metrics-and-baselines)
 11. [Configuration reference](#11-configuration-reference)
 12. [Command-line usage](#12-command-line-usage)
-13. [Smoke test and verification results](#13-smoke-test-and-verification-results)
+13. [Results](#13-results)
 14. [Design decisions](#14-design-decisions)
 15. [Code reference](#15-code-reference)
 16. [Output files](#16-output-files)
@@ -39,8 +39,7 @@ visualisation.
 | Training (`src/train.py`) | Done; runs end to end on CPU |
 | Evaluation and plots (`src/evaluate.py`) | Done; metrics per horizon and channel, baselines, 3 plots |
 | Synthetic data generator | Done; writes files in the exact Dataverse raw format |
-| **Real Milano data** | **Not downloaded yet.** Every result so far comes from synthetic data. |
-| **Full-grid training** | **Not run yet.** The development machine has no GPU (CPU-only PyTorch). |
+| **Real Milano data** | **Done.** Full run on Kaggle (Tesla T4): 62 days, full 100×100 grid. Results in §13 and `outputs/kaggle/`. |
 
 ---
 
@@ -503,9 +502,50 @@ you used for training.
 
 ---
 
-## 13. Smoke test and verification results
+## 13. Results
 
-All of these results come from **synthetic data** (`scripts/make_synthetic_data.py`). It has 12
+### Real data: full run on Kaggle (`outputs/kaggle/`)
+
+Setup:
+
+| Item | Value |
+|---|---|
+| Data | Telecom Italia Milano, all 62 days (2013-11-01 to 2014-01-01), 10-minute steps, full 100×100 grid |
+| Tensor | (8928, 5, 100, 100); preprocessing took about 11 minutes |
+| Task | internet traffic, 6 frames (1 hour) in → 1 frame (10 minutes) ahead |
+| Windows | 6,243 train / 1,333 val / 1,334 test. The test period is about 2013-12-23 to 2014-01-01 (Christmas and New Year). |
+| Model | default config: 2 ConvLSTM layers, hidden 64, 3×3 kernels, refinement head; 464,290 parameters |
+| Hardware | Kaggle Tesla T4, PyTorch 2.11 (CUDA), mixed precision |
+| Training | about 146 s per epoch; early stopping after epoch 51 (best: epoch 41); about 2 h 5 min of training, 2 h 18 min for the whole notebook |
+| Active cells | 10,000 / 10,000 (none masked) |
+
+Test-set results, in original units:
+
+| Model | RMSE | MAE | MAPE % |
+|---|---|---|---|
+| **ConvLSTM** | **8.4745** | **3.9071** | **11.99** |
+| Persistence (last frame) | 9.3922 | 4.3344 | 12.56 |
+| Window mean (last hour) | 10.3727 | 4.4394 | 12.13 |
+| *ConvLSTM vs persistence* | *−9.8%* | *−9.9%* | *−4.6%* |
+| *ConvLSTM vs window mean* | *−18.3%* | *−12.0%* | *−1.2%* |
+
+The ConvLSTM beats both baselines on all three metrics. Persistence is the stronger baseline
+here (unlike on the synthetic data), as expected for real 10-minute traffic.
+
+Observations:
+
+- **Errors are concentrated in the dense city centre.** That is where traffic levels, and
+  therefore absolute errors, are highest (`heatmaps.png`).
+- **Validation loss is below training loss throughout.** The later periods (mid to late
+  December, then the holidays) have lower overall traffic, so their errors are smaller on the
+  normalised scale. It is not a sign of leakage.
+- **The normalised losses are very small (~1e-6).** Min-max scaling with a few very busy cells
+  pushes most values close to 0. This is the main motivation for trying
+  `data.log_transform: true` next.
+
+### Synthetic data: smoke test and verification
+
+The results in the rest of this section come from **synthetic data** (`scripts/make_synthetic_data.py`). It has 12
 Gaussian traffic hotspots scaled by a daily cycle, with lognormal noise. Like the real data, it
 has extra country-code rows, empty fields for tiny values, and about 3% of rows dropped.
 
@@ -678,9 +718,11 @@ Preprocessing writes `tensor.npy` and `meta.json` to `paths.processed_dir`.
 
 ## 18. Known limitations and next steps
 
-- **Not yet run on the real Milano data.** Download it, preprocess, and retune. Try
-  `log_transform: true` first, because the real traffic is heavy-tailed.
-- **No GPU on the development machine.** Full-grid training needs CUDA to be practical.
+- **One real-data configuration run so far** (internet only, 1 step ahead). Next experiments:
+  - `log_transform: true`
+  - all five features as input
+  - `t_out: 3` or `6` for 30–60 minutes ahead
+- **No GPU on the development machine.** Full-grid training is done on Kaggle (§3).
 - **Grid orientation** (IDs running south→north) should be checked against
   `milano-grid.geojson` if exact geography matters.
 - **Possible extensions:**
