@@ -49,7 +49,7 @@ visualisation.
 | 2 | **No notion of time.** One hour of history cannot tell 08:00 (traffic about to rise) from 20:00 (about to fall). | `data.time_features: true` adds 4 input channels: sin/cos of the time of day and of the day of the week. |
 | 3 | **Weak baselines.** Only "last frame" and "last-hour mean"; the standard comparison for traffic is "same time yesterday / last week". | New `SeasonalDaily` and `SeasonalWeekly` baselines, and a skill score of the ConvLSTM against every baseline in `metrics.json`. |
 | 4 | **Early stopping fooled by tiny gains.** Improvements in the 7th digit kept a converged run going about 40 more epochs. | `training.min_delta_rel`: only improvements larger than this fraction reset the patience (the best model is still always saved). |
-| 5 | **Loss values meant nothing on their own.** | Training measures the persistence loss on the validation set once and logs every val loss as "N× persistence" (below 1.0 beats persistence). |
+| 5 | **The loss curve was misleading.** Validation sat below training (the December period is easier, not leakage), the losses were ~1e-6, and nothing showed whether the model beat a baseline. | Training measures the persistence loss on the training and validation sets once, logs every val loss as "N× persistence", stores both ratios in `history.csv`, and `loss_curve.png` plots them on one scale with a line at 1.0 (= persistence). |
 | 6 | **No resume.** A Kaggle timeout lost the whole run. | `python -m src.train --resume` continues from `last_checkpoint.pt` (model, optimiser, scheduler, AMP scaler, early-stopping state). |
 | 7 | **Small bugs.** The epoch loss was a mean over batches (the short last batch counted as much as a full one); the logged learning rate was the one for the *next* epoch; the shuffle order was not tied to the seed; re-running appended to an old `train.log`. | Per-sample weighting; the LR actually used is logged; a seeded `torch.Generator` for shuffling; logs are overwritten (appended only when resuming). |
 | 8 | **Unreadable time-series plot.** Ten days of 10-minute data in one panel formed a solid band. | `evaluation.plot_steps` (default 432 = last 3 days); the prediction is drawn on top. |
@@ -418,7 +418,7 @@ RMSE and MAE that the ConvLSTM removes (positive = ConvLSTM better).
 |---|---|
 | `heatmaps.png` | for `num_plot_samples` random test frames: actual, ConvLSTM prediction and absolute error (north up; blue ramp for traffic, orange ramp for error, colour capped at the 99.5th percentile) |
 | `cell_timeseries.png` | 1-step-ahead test series for one cell over the last `evaluation.plot_steps` steps (default 3 days): actual vs ConvLSTM vs persistence. The cell is `evaluation.plot_cell` or a random cell from the 10% busiest. |
-| `loss_curve.png` | train and validation loss per epoch (log scale) |
+| `loss_curve.png` | train and validation loss per epoch, each divided by the persistence loss on the same split, with a dashed line at 1.0 (= persistence). Falls back to raw losses on a log scale when the persistence reference is unavailable (run 1). |
 
 ---
 
@@ -578,9 +578,13 @@ Observations:
 
 - **Errors are concentrated in the dense city centre.** That is where traffic levels, and
   therefore absolute errors, are highest (`heatmaps.png`).
-- **Validation loss is below training loss throughout.** The later periods (mid to late
-  December, then the holidays) have lower overall traffic, so their errors are smaller on the
-  normalised scale. It is not a sign of leakage.
+- **Validation loss is below training loss throughout, and both curves are flat after epoch 2
+  (`loss_curve.png`).** This is not leakage: the validation period (mid-December) is simply
+  easier to predict than November, so even persistence scores a lower loss there (in the v2 code
+  the training log prints the persistence loss on both splits). Raw losses from different
+  periods cannot be compared, and the plot does not show whether the model beats the baseline.
+  v2 therefore plots each loss divided by the persistence loss on the same split, with a line at
+  1.0, and the flatness itself comes from the min-max scaling issue below.
 - **The normalised losses are very small (~1e-6).** Min-max scaling with a few very busy cells
   pushes most values close to 0. This motivated the switch to standard scaling in v2.
 - Run 1 was compared only with persistence and the window mean; the seasonal baselines were
@@ -700,7 +704,7 @@ Every run writes these to `paths.output_dir`:
 | `best_model.pt` | train | best checkpoint (see §9) |
 | `last_checkpoint.pt` | train | resume state, overwritten every epoch (git-ignored) |
 | `config_used.json` | train | exact config of the run |
-| `history.csv` | train | epoch, train_loss, val_loss, lr, seconds |
+| `history.csv` | train | epoch, train_loss, val_loss, lr, seconds, train_vs_persistence, val_vs_persistence |
 | `train.log` | train | training log |
 | `metrics.json` | evaluate | overall, per-horizon and per-channel metrics for all models, the ConvLSTM's skill against each baseline, plus notes (units, active cells, MAPE threshold, test windows, checkpoint) |
 | `metrics_per_horizon.csv` | evaluate | model, horizon, RMSE, MAE, MAPE_% |

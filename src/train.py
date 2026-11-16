@@ -192,15 +192,27 @@ def train(cfg: dict[str, Any], resume: bool = False) -> Path:
         logger.info(f"Resumed from {last_path} after epoch {state['epoch']} (best val loss {stopper.best:.4e})")
     else:
         with open(history_path, "w", newline="", encoding="utf-8") as f:
-            csv.writer(f).writerow(["epoch", "train_loss", "val_loss", "lr", "seconds"])
+            csv.writer(f).writerow(["epoch", "train_loss", "val_loss", "lr", "seconds",
+                                    "train_vs_persistence", "val_vs_persistence"])
 
-    # The loss of "predict no change" on the validation set. A raw loss value means little on its
-    # own; as a fraction of this reference, anything below 1.0 beats persistence.
-    persistence_loss = None
+    # The loss of "predict no change" on each split. Raw losses from different periods are not
+    # comparable (the December validation period is easier than November, so val < train even for
+    # persistence); as a fraction of the same split's persistence loss they are, and anything below
+    # 1.0 beats persistence.
+    persistence_loss = persistence_train = None
     if residual is not None:
         persistence_loss = run_epoch(None, loaders["val"], device, tcfg, mask,
                                      max_batches=tcfg.get("max_eval_batches"), persistence_channels=residual)
-        logger.info(f"Reference: persistence scores a val loss of {persistence_loss:.4e}")
+        persistence_train = run_epoch(None, loaders["train"], device, tcfg, mask,
+                                      max_batches=tcfg.get("max_train_batches"), persistence_channels=residual)
+        logger.info(f"Reference: persistence scores a train loss of {persistence_train:.4e} "
+                    f"and a val loss of {persistence_loss:.4e}")
+
+    def ratio(loss: float, reference: float | None) -> float | str:
+        return round(loss / reference, 5) if reference else ""
+
+    def vs_persistence(val_loss: float) -> str:
+        return f" ({val_loss / persistence_loss:.3f}x persistence)" if persistence_loss else ""
 
     def vs_persistence(val_loss: float) -> str:
         return f" ({val_loss / persistence_loss:.3f}x persistence)" if persistence_loss else ""
@@ -243,7 +255,8 @@ def train(cfg: dict[str, Any], resume: bool = False) -> Path:
         logger.info(f"Epoch {epoch:3d} | train {train_loss:.4e} | val {val_loss:.4e}{vs_persistence(val_loss)} | "
                     f"lr {lr:.2e} | {elapsed:.1f}s{'  * saved best' if improved else ''}")
         with open(history_path, "a", newline="", encoding="utf-8") as f:
-            csv.writer(f).writerow([epoch, train_loss, val_loss, lr, round(elapsed, 2)])
+            csv.writer(f).writerow([epoch, train_loss, val_loss, lr, round(elapsed, 2),
+                                    ratio(train_loss, persistence_train), ratio(val_loss, persistence_loss)])
 
         if stopper.should_stop:
             logger.info(f"Early stopping: no noticeable val improvement for {stopper.patience} epochs")

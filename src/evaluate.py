@@ -159,6 +159,25 @@ def plot_history(history_csv: Path, out_path: Path) -> None:
         return
     fig, ax = plt.subplots(figsize=(8, 4.2), facecolor=SURFACE)
     _style_axes(ax)
+    if "val_vs_persistence" in hist and hist["val_vs_persistence"].notna().any():
+        # Each split's loss divided by persistence on the same split: train and validation are
+        # then on one scale, and the dashed line at 1.0 is "no better than predicting no change".
+        ax.plot(hist["epoch"], hist["train_vs_persistence"], color=SERIES["Actual"], linewidth=2, label="Train")
+        ax.plot(hist["epoch"], hist["val_vs_persistence"], color=SERIES["ConvLSTM"], linewidth=2, label="Validation")
+        ax.axhline(1.0, color=SERIES["Persistence"], linewidth=1.4, linestyle="--", label="Persistence")
+        top = max(1.1, float(np.nanpercentile(hist[["train_vs_persistence", "val_vs_persistence"]].to_numpy(), 95)) * 1.05)
+        ax.set_ylim(0, top)
+        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+        ax.set_xlabel("Epoch", color=TEXT_MUTED)
+        ax.set_ylabel("loss ÷ persistence loss", color=TEXT_MUTED)
+        ax.set_title("Loss relative to persistence on the same split (lower is better)", color=TEXT, fontsize=12, loc="left")
+        leg = ax.legend(frameon=False)
+        for text in leg.get_texts():
+            text.set_color(TEXT)
+        fig.tight_layout()
+        fig.savefig(out_path, dpi=120, facecolor=SURFACE)
+        plt.close(fig)
+        return
     ax.plot(hist["epoch"], hist["train_loss"], color=SERIES["Actual"], linewidth=2, label="Train")
     ax.plot(hist["epoch"], hist["val_loss"], color=SERIES["ConvLSTM"], linewidth=2, label="Validation")
     ax.set_yscale("log")
