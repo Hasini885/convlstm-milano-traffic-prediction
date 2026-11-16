@@ -56,6 +56,8 @@ visualisation.
 | 9 | **Download script could not work.** Harvard Dataverse rejects every scripted download ("required Guestbook response"). | Replaced by `scripts/download_kaggle.py` (Kaggle mirror, identical files). Unused `scikit-learn` removed from `requirements.txt`. |
 | 10 | **Grid orientation unverified.** | Checked against `milano-grid.geojson`: CellID 1 is the south-west corner, 2 is east of it and 101 is north of it, exactly as `cell_id_to_rowcol` assumes. |
 
+| 11 | **Large gap between training and validation loss.** Validation was *below* training, so this is not overfitting (regularisation would not help): MSE on absolute values weights the busier November training period more than the quieter December validation period. Even persistence, with no model at all, scores 1.53× more loss on training than on validation. | `data.log_transform: true` (with standard scaling applied after `log1p`) makes errors relative. The persistence train/val ratio drops to 1.09, and in a short real-data test the model's train and val losses became nearly equal (0.037 vs 0.035, instead of 0.41 vs 0.22). Huber loss was also tested and did not change the ratio. |
+
 All new options default to the run-1 behaviour in `configs/default.yaml`, so old commands and the
 run-1 checkpoint keep working (the checkpoint was re-evaluated with the new code). The Kaggle
 notebook switches them on through `configs/kaggle.yaml`.
@@ -593,10 +595,10 @@ Observations:
 ### Run 2: v2 settings (in progress)
 
 Same data, split, task and model size as run 1 (473,506 parameters: the 4 calendar channels add
-9,216), with `scaler: standard`, `time_features: true` and `min_delta_rel: 0.001`. Notebook:
-`kaggle/convlstm_milano_kaggle.ipynb`.
+9,216), with `scaler: standard`, `log_transform: true`, `time_features: true` and
+`min_delta_rel: 0.001`. Notebook: `kaggle/convlstm_milano_kaggle.ipynb`.
 
-The first attempt (2026-11-16, Tesla T4) was stopped after **18 epochs**, before evaluation, so
+The first attempt (2026-11-16, Tesla T4, **without** `log_transform`) was stopped after **18 epochs**, before evaluation, so
 there are **no test results yet**. The interim validation figures:
 
 | Item | Value |
@@ -743,7 +745,9 @@ Preprocessing writes `tensor.npy` and `meta.json` to `paths.processed_dir`.
 - **Only internet, 1 step ahead, has been run on real data.** Next experiments:
   - all five features as input
   - `t_out: 3` or `6` for 30–60 minutes ahead
-  - `log_transform: true` together with standard scaling
+  - the effect of `log_transform` alone (run 2 changes several settings at once). Training in
+    log space optimises relative error, so RMSE on the busiest cells could get worse even as MAE
+    and MAPE improve; the run-2 test table will show which way it goes.
 - **The test period is the Christmas/New Year fortnight**, which is atypical traffic; a different
   split (or several) would show how well results generalise.
 - **No GPU on the development machine.** Full-grid training is done on Kaggle (§3).
