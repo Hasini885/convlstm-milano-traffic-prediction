@@ -5,9 +5,13 @@ prediction horizon and per target channel. Only cells that were active during tr
 when ``data.mask_inactive`` is on. MAPE only counts cells whose true value exceeds
 ``evaluation.mape_threshold``, because it is undefined or explosive near zero.
 
-Baselines (need every target feature to also be an input feature):
-  * ``persistence``: repeat the last observed frame for every horizon.
-  * ``window_mean``: the mean of the ``t_in`` input frames (historical average).
+Baselines:
+  * ``Persistence``: repeat the last observed frame for every horizon.
+  * ``WindowMean``: the mean of the ``t_in`` input frames (historical average).
+  * ``SeasonalDaily`` / ``SeasonalWeekly``: the frame at the same time one day / one week earlier.
+
+The first two need every target feature to also be an input feature; the seasonal ones need the
+test period to start at least one day / one week into the data.
 
 Usage::
 
@@ -30,7 +34,7 @@ import torch  # noqa: E402
 from matplotlib.colors import LinearSegmentedColormap  # noqa: E402
 from matplotlib.ticker import MaxNLocator  # noqa: E402
 
-from .dataset import MinMaxNormalizer, build_dataloaders, build_datasets  # noqa: E402
+from .dataset import Normalizer, build_dataloaders, build_datasets  # noqa: E402
 from .model import build_model  # noqa: E402
 from .utils import add_common_args, get_device, get_logger, load_config, resolve_path, save_json, set_seed  # noqa: E402
 
@@ -131,9 +135,11 @@ def plot_cell_series(times: Sequence[pd.Timestamp], series: dict[str, np.ndarray
     """Time series of actual vs predicted vs persistence for one cell (first horizon)."""
     fig, ax = plt.subplots(figsize=(13, 4.2), facecolor=SURFACE)
     _style_axes(ax)
-    for name, values in series.items():
-        ax.plot(times, values, color=SERIES[name], linewidth=2 if name != "Persistence" else 1.4,
-                label=name, alpha=1.0 if name != "Persistence" else 0.85)
+    # The prediction is drawn last and on top; persistence is a thin reference line underneath.
+    for name in ("Persistence", "Actual", "ConvLSTM"):
+        if name in series:
+            ax.plot(times, series[name], color=SERIES[name], linewidth=1.8 if name != "Persistence" else 1.0,
+                    label=name, alpha=1.0 if name != "Persistence" else 0.8)
     ax.set_title(title, color=TEXT, fontsize=12, loc="left")
     ax.set_ylabel(units_label, color=TEXT_MUTED)
     ax.set_ylim(bottom=0)
@@ -193,7 +199,7 @@ def evaluate(cfg: dict[str, Any], checkpoint: str | Path | None = None) -> dict[
     # from the current config.
     run_cfg = {**ckpt["config"], "paths": cfg["paths"], "evaluation": ecfg}
     run_cfg["training"] = {**ckpt["config"]["training"], "batch_size": cfg["training"]["batch_size"]}
-    normalizer = MinMaxNormalizer.from_state_dict(ckpt["normalizer"])
+    normalizer = Normalizer.from_state_dict(ckpt["normalizer"])
 
     bundle = build_datasets(run_cfg, normalizer=normalizer)
     test_ds = bundle.datasets["test"]
@@ -202,22 +208,31 @@ def evaluate(cfg: dict[str, Any], checkpoint: str | Path | None = None) -> dict[
     target_names = [bundle.meta["features"][i] for i in tgt_ch]
     residual = ckpt.get("residual_channels")
 
-    model = build_model(run_cfg, len(in_ch), len(tgt_ch), residual).to(device)
+    model = build_model(run_cfg, test_ds.num_input_channels, len(tgt_ch), residual).to(device)
     model.load_state_dict(ckpt["model_state"])
     model.eval()
-    logger.info(f"Loaded {ckpt_path} (epoch {ckpt['epoch']}, val loss {ckpt['val_loss']:.6f}); "
+    logger.info(f"Loaded {ckpt_path} (epoch {ckpt['epoch']}, val loss {ckpt['val_loss']:.4e}); "
                 f"{len(test_ds)} test windows on {device}")
 
     t_out = run_cfg["data"]["t_out"]
     baseline_pos = [in_ch.index(t) for t in tgt_ch] if all(t in in_ch for t in tgt_ch) else None
     mask = bundle.mask
     mask_dev = mask.to(device) if mask is not None else None
-    accs = {"ConvLSTM": MetricAccumulator(t_out, len(tgt_ch), ecfg.get("mape_threshold", 1.0))}
+    def new_acc() -> MetricAccumulator:
+        return MetricAccumulator(t_out, len(tgt_ch), ecfg.get("mape_threshold", 1.0))
+
+    accs = {"ConvLSTM": new_acc()}
     if baseline_pos is not None:
-        accs["Persistence"] = MetricAccumulator(t_out, len(tgt_ch), ecfg.get("mape_threshold", 1.0))
-        accs["WindowMean"] = MetricAccumulator(t_out, len(tgt_ch), ecfg.get("mape_threshold", 1.0))
+        accs["Persistence"], accs["WindowMean"] = new_acc(), new_acc()
     else:
-        logger.info("Baselines skipped: not every target feature is an input feature")
+        logger.info("Persistence/WindowMean skipped: not every target feature is an input feature")
+    # Seasonal baselines: the same time one day / one week earlier. Looking back is legitimate at
+    # forecast time, so these frames may come from the training or validation period.
+    steps_per_day = round(24 * 60 / bundle.meta["interval_minutes"])
+    seasonal = {name: lag for name, lag in (("SeasonalDaily", steps_per_day), ("SeasonalWeekly", 7 * steps_per_day))
+                if test_ds.target_time_index(0) - lag >= 0}
+    for name in seasonal:
+        accs[name] = new_acc()
 
     rng = np.random.default_rng(cfg.get("seed", 42))
     cell = _pick_cell(bundle.activity, mask, rng, ecfg.get("plot_cell"))
@@ -237,10 +252,17 @@ def evaluate(cfg: dict[str, Any], checkpoint: str | Path | None = None) -> dict[
 
         persist = None
         if baseline_pos is not None:
-            x_raw = normalizer.denormalize(x, in_ch)[:, :, baseline_pos]
+            x_raw = normalizer.denormalize(x[:, :, baseline_pos], tgt_ch)
             persist = x_raw[:, -1:].expand(-1, t_out, -1, -1, -1)
             accs["Persistence"].update(persist, y_raw, mask_dev)
             accs["WindowMean"].update(x_raw.mean(dim=1, keepdim=True).expand(-1, t_out, -1, -1, -1), y_raw, mask_dev)
+
+        if seasonal:
+            # Window i targets frames t_i .. t_i + t_out - 1, with consecutive t_i (test stride is 1).
+            t_idx = (test_ds.target_time_index(offset) + np.arange(x.shape[0])[:, None] + np.arange(t_out)[None, :])
+            for name, lag in seasonal.items():
+                frames = torch.from_numpy(test_ds.raw_target_frames(t_idx - lag)).to(device)
+                accs[name].update(frames, y_raw, mask_dev)
 
         r, c = cell
         cell_series["Actual"] += y_raw[:, 0, 0, r, c].cpu().tolist()
@@ -258,6 +280,11 @@ def evaluate(cfg: dict[str, Any], checkpoint: str | Path | None = None) -> dict[
         offset += x.shape[0]
 
     results = {name: acc.results(target_names) for name, acc in accs.items()}
+    # Skill score: the fraction of each baseline's error that the ConvLSTM removes (positive = better).
+    ours = results["ConvLSTM"]["overall"]
+    results["ConvLSTM"]["skill_vs_baselines_%"] = {
+        name: {m: round(100 * (1 - ours[m] / res["overall"][m]), 2) for m in ("RMSE", "MAE")}
+        for name, res in results.items() if name != "ConvLSTM"}
     results["notes"] = {
         "units": "original dataset units (unitless activity counts)",
         "mask_inactive": mask is not None,
@@ -279,19 +306,23 @@ def evaluate(cfg: dict[str, Any], checkpoint: str | Path | None = None) -> dict[
         writer.writeheader()
         writer.writerows(rows)
 
-    logger.info(f"{'model':<12} {'horizon':>7} {'RMSE':>12} {'MAE':>12} {'MAPE %':>9}")
+    logger.info(f"{'model':<14} {'horizon':>7} {'RMSE':>12} {'MAE':>12} {'MAPE %':>9}")
     for row in rows:
-        logger.info(f"{row['model']:<12} {row['horizon']:>7} {row['RMSE']:>12.4f} {row['MAE']:>12.4f} {row['MAPE_%']:>9.2f}")
+        logger.info(f"{row['model']:<14} {row['horizon']:>7} {row['RMSE']:>12.4f} {row['MAE']:>12.4f} {row['MAPE_%']:>9.2f}")
     for name, res in results.items():
         if name != "notes":
             o = res["overall"]
-            logger.info(f"{name:<12} overall  RMSE {o['RMSE']:.4f} | MAE {o['MAE']:.4f} | MAPE {o['MAPE_%']:.2f}%")
+            logger.info(f"{name:<14} overall  RMSE {o['RMSE']:.4f} | MAE {o['MAE']:.4f} | MAPE {o['MAPE_%']:.2f}%")
+    for name, skill in results["ConvLSTM"]["skill_vs_baselines_%"].items():
+        logger.info(f"ConvLSTM vs {name:<14} RMSE {-skill['RMSE']:+.1f}% | MAE {-skill['MAE']:+.1f}%")
 
     channel = target_names[0]
     units = f"{channel} activity"
     plot_heatmaps(sorted(samples, key=lambda s: s["time"]), channel, units, out_dir / "heatmaps.png")
-    times = [origin + step * test_ds.target_time_index(i) for i in range(len(test_ds))]
-    series = {k: np.asarray(v) for k, v in cell_series.items() if v}
+    # Only the last `plot_steps` points: ten days of 10-minute data in one panel is an unreadable band.
+    n_plot = min(int(ecfg.get("plot_steps") or len(test_ds)), len(test_ds))
+    times = [origin + step * test_ds.target_time_index(i) for i in range(len(test_ds) - n_plot, len(test_ds))]
+    series = {k: np.asarray(v[-n_plot:]) for k, v in cell_series.items() if v}
     crop = run_cfg["data"].get("crop")
     r_abs, c_abs = (cell[0] + crop[0], cell[1] + crop[2]) if crop else cell
     cell_id = r_abs * bundle.meta["grid_size"] + c_abs + 1

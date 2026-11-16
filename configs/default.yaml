@@ -18,7 +18,9 @@ data:
   grid_size: 100
   max_days: null                   # preprocess only the first N days (null = all)
   fill_method: zero                # zero | ffill_zero  (see src/dataset.py docstring)
-  log_transform: false             # apply log1p before min-max scaling (helps with heavy tails)
+  log_transform: false             # apply log1p before scaling (helps with heavy tails)
+  scaler: minmax                   # minmax | standard (standard keeps losses near 1 instead of ~1e-6)
+  time_features: false             # append sin/cos time-of-day and day-of-week input channels
   mask_inactive: true              # exclude cells with no training-period activity from loss/metrics
   t_in: 6                          # 6 x 10 min = 1 hour of history
   t_out: 1                         # frames to predict
@@ -46,6 +48,7 @@ training:
   huber_delta: 0.05                # on the normalised [0, 1] scale
   patience: 10                     # early stopping on validation loss
   min_delta: 0.0
+  min_delta_rel: 0.0               # e.g. 0.001: improvements under 0.1% don't reset patience
   scheduler_patience: 5            # ReduceLROnPlateau
   scheduler_factor: 0.5
   min_lr: 1.0e-6
@@ -59,3 +62,4 @@ evaluation:
   mape_threshold: 1.0              # MAPE only counts cells whose true value exceeds this
   num_plot_samples: 3
   plot_cell: null                  # [row, col] within the (cropped) grid; null = random busy cell
+  plot_steps: 432                  # last N test steps in cell_timeseries.png (432 = 3 days); null = all

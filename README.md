@@ -37,8 +37,28 @@ visualisation.
 | Preprocessing (`src/dataset.py`) | Done; checked against a direct pandas aggregation |
 | Model (`src/model.py`) | Done; forward/backward checked for 1 and 5 inputs, multi-channel output, `t_out` 1 and 3 |
 | Training (`src/train.py`) | Done; runs on GPU (CUDA) or CPU |
-| Evaluation and plots (`src/evaluate.py`) | Done; metrics per horizon and channel, baselines, 3 plots |
-| **Real Milano data** | **Done.** Full run on Kaggle (Tesla T4): 62 days, full 100×100 grid. Results in §13 and `outputs/kaggle/`. |
+| Evaluation and plots (`src/evaluate.py`) | Done; metrics per horizon and channel, 4 baselines, skill scores, 3 plots |
+| **Real Milano data, run 1** | **Done.** Full run on Kaggle (Tesla T4): 62 days, full 100×100 grid. Results in §13 and `outputs/kaggle/`. |
+| **Real Milano data, run 2 (v2 settings)** | **In progress.** The first attempt was stopped after epoch 18 (best validation loss 0.80× persistence); test results pending. See §13. |
+
+### What changed in v2 (drawbacks of run 1 and their fixes)
+
+| # | Drawback in run 1 | Fix |
+|---|---|---|
+| 1 | **Min-max scaling squeezed the data.** A few very busy city-centre cells set the maximum, so almost every value sat near 0 and the training loss was about 1e-6, which leaves the optimiser little signal. | `data.scaler: standard` (per-channel mean/std, fitted on the training period). Losses are now of order 1e-2. |
+| 2 | **No notion of time.** One hour of history cannot tell 08:00 (traffic about to rise) from 20:00 (about to fall). | `data.time_features: true` adds 4 input channels: sin/cos of the time of day and of the day of the week. |
+| 3 | **Weak baselines.** Only "last frame" and "last-hour mean"; the standard comparison for traffic is "same time yesterday / last week". | New `SeasonalDaily` and `SeasonalWeekly` baselines, and a skill score of the ConvLSTM against every baseline in `metrics.json`. |
+| 4 | **Early stopping fooled by tiny gains.** Improvements in the 7th digit kept a converged run going about 40 more epochs. | `training.min_delta_rel`: only improvements larger than this fraction reset the patience (the best model is still always saved). |
+| 5 | **Loss values meant nothing on their own.** | Training measures the persistence loss on the validation set once and logs every val loss as "N× persistence" (below 1.0 beats persistence). |
+| 6 | **No resume.** A Kaggle timeout lost the whole run. | `python -m src.train --resume` continues from `last_checkpoint.pt` (model, optimiser, scheduler, AMP scaler, early-stopping state). |
+| 7 | **Small bugs.** The epoch loss was a mean over batches (the short last batch counted as much as a full one); the logged learning rate was the one for the *next* epoch; the shuffle order was not tied to the seed; re-running appended to an old `train.log`. | Per-sample weighting; the LR actually used is logged; a seeded `torch.Generator` for shuffling; logs are overwritten (appended only when resuming). |
+| 8 | **Unreadable time-series plot.** Ten days of 10-minute data in one panel formed a solid band. | `evaluation.plot_steps` (default 432 = last 3 days); the prediction is drawn on top. |
+| 9 | **Download script could not work.** Harvard Dataverse rejects every scripted download ("required Guestbook response"). | Replaced by `scripts/download_kaggle.py` (Kaggle mirror, identical files). Unused `scikit-learn` removed from `requirements.txt`. |
+| 10 | **Grid orientation unverified.** | Checked against `milano-grid.geojson`: CellID 1 is the south-west corner, 2 is east of it and 101 is north of it, exactly as `cell_id_to_rowcol` assumes. |
+
+All new options default to the run-1 behaviour in `configs/default.yaml`, so old commands and the
+run-1 checkpoint keep working (the checkpoint was re-evaluated with the new code). The Kaggle
+notebook switches them on through `configs/kaggle.yaml`.
 
 ---
 
@@ -59,10 +79,10 @@ convlstm_milano/
 │   ├── train.py                  # masked loss, early stopping, LR scheduling, checkpointing
 │   └── evaluate.py               # streaming metrics, baselines, heatmaps / time-series / loss plots
 ├── scripts/
-│   ├── download_dataverse.py     # downloader for the Harvard Dataverse files
+│   ├── download_kaggle.py        # downloader for the raw daily files (Kaggle mirror)
 │   └── daily_push.ps1            # daily commit-and-push helper
 ├── kaggle/
-│   └── convlstm_milano_kaggle.ipynb  # full real-data run on a Kaggle GPU
+│   └── convlstm_milano_kaggle.ipynb  # self-contained full run on a Kaggle GPU (embeds the code)
 ├── data/
 │   ├── raw/                      # put the real daily files here
 │   └── processed/                # tensor.npy + meta.json for the real data
@@ -70,8 +90,8 @@ convlstm_milano/
     └── kaggle/                   # checkpoint, logs, metrics and plots from the real-data run
 ```
 
-Code size: about 1,550 lines (`dataset.py` 491, `evaluate.py` 314, `model.py` 243,
-`train.py` 200, `utils.py` 122, `download_dataverse.py` 101, configs 76).
+Code size: about 1,690 lines (`dataset.py` 555, `evaluate.py` 345, `train.py` 269,
+`model.py` 243, `utils.py` 122, `download_kaggle.py` 75, configs 80).
 `desktop.ini` and `__pycache__/` are Windows and Python artefacts and can be ignored.
 
 ---
@@ -83,7 +103,7 @@ From the project root:
 ```bash
 pip install -r requirements.txt
 
-# Put the real daily files in data/raw/, then
+# Put the real daily files in data/raw/ (e.g. python scripts/download_kaggle.py --out data/raw), then
 python -m src.dataset  --config configs/default.yaml
 python -m src.train    --config configs/default.yaml
 python -m src.evaluate --config configs/default.yaml
@@ -93,23 +113,27 @@ python -m src.evaluate --config configs/default.yaml
 
 ### Running on Kaggle (GPU, real data)
 
-The full real-data run is set up as a Kaggle notebook: `kaggle/convlstm_milano_kaggle.ipynb`
-(configuration: `configs/kaggle.yaml`).
+The full real-data run is the Kaggle notebook `kaggle/convlstm_milano_kaggle.ipynb`. It is
+**self-contained**: its first cells write `src/` and `configs/` (including a `kaggle.yaml` with the
+v2 options switched on) with `%%writefile`, so no code upload is needed.
 
-- **Data:** the Kaggle dataset [`dkgmgo/telecom-italia-milan`](https://www.kaggle.com/datasets/dkgmgo/telecom-italia-milan).
+- **Data:** attach the Kaggle dataset [`dkgmgo/telecom-italia-milan`](https://www.kaggle.com/datasets/dkgmgo/telecom-italia-milan).
   All 62 daily files match the official Harvard Dataverse release byte for byte (checked
   against the Dataverse file list). This avoids the Dataverse guestbook form that blocks
   automated downloads.
-- **Code:** uploaded as the private dataset `hasinisaimaram/convlstm-milano-code` (a zip of this
-  folder).
-- **Notebook:** `hasinisaimaram/convlstm-milano-traffic-prediction` (private, GPU). It finds the
-  code and the raw files under `/kaggle/input` and detects the time step. It then preprocesses,
-  trains (budget `max_hours: 8.5`, within Kaggle's 12-hour limit), evaluates, and displays the
-  metrics and plots.
+- **Accelerator:** GPU T4 (the notebook stops immediately without a GPU).
+- **What it does:** finds the raw files under `/kaggle/input`, detects the time step,
+  preprocesses (about 7 minutes, skipped if the tensor already exists), trains (budget
+  `max_hours: 8.5`; about 157 s per epoch), evaluates, compares with run 1 and shows the plots.
+  Outputs go to `/kaggle/working/outputs/convlstm_internet_v2`.
+- **Run it with "Save Version → Save & Run All (Commit)"**, not only in the interactive editor:
+  a committed run continues with the browser closed, and its outputs can be downloaded with
+  `kaggle kernels output <owner>/<notebook>`. If the training cell is interrupted inside a
+  session, re-running it resumes from the last finished epoch.
 
-To re-run after changing the code: re-zip the project and run
-`kaggle datasets version -p <folder> -m "update"`, then `kaggle kernels push -p <kernel folder>`.
-On Windows, call the Kaggle CLI with **relative** paths; it garbles absolute ones.
+After changing the code, regenerate the `%%writefile` cells from `src/` so the notebook and the
+repository stay identical. On Windows, call the Kaggle CLI with **relative** paths; it garbles
+absolute ones.
 
 ## 4. Environment and installation
 
@@ -120,7 +144,6 @@ On Windows, call the Kaggle CLI with **relative** paths; it garbles absolute one
 | torch | 2.12.1 | model, training, metrics |
 | numpy | 1.26.4 | tensors, memmaps |
 | pandas | 2.2.0 | reading raw files, timestamps |
-| scikit-learn | 1.4.0 | pinned as requested; **not used** (metrics are computed incrementally in PyTorch) |
 | matplotlib | 3.9.2 | plots |
 | pyyaml | 6.0.3 | configs |
 
@@ -152,10 +175,15 @@ Harvard Dataverse, doi:10.7910/DVN/EGZHFV.
 
 ### How to download
 
-1. Open the Dataverse page above (search "Telecommunications - SMS, Call, Internet - MI").
-2. Download the daily files `sms-call-internet-mi-2013-11-01.txt` …
-   `sms-call-internet-mi-2014-01-01.txt` and unzip them into `data/raw/`.
-3. Optional: `milano-grid.geojson` from the same collection, to check the grid orientation.
+- **Scripted (recommended):** `python scripts/download_kaggle.py --out data/raw [--max-days 7]`.
+  It uses the Kaggle CLI (`pip install kaggle` plus an API token) and the mirror
+  `dkgmgo/telecom-italia-milan`, which has the identical files. Finished files are skipped, so an
+  interrupted download can be restarted.
+- **By hand:** open the Dataverse page above, fill in its guestbook form, and download
+  `sms-call-internet-mi-2013-11-01.txt` … `sms-call-internet-mi-2014-01-01.txt` into `data/raw/`.
+  The Dataverse API refuses scripted downloads of these files (HTTP 400, "required Guestbook
+  response").
+- Optional: `milano-grid.geojson` (in both sources) to check the grid orientation.
 
 ### Supported raw formats (detected automatically)
 
@@ -225,9 +253,15 @@ Implemented by `build_datasets()` and `MilanoTrafficDataset`:
   - `Y`: `(T_out, C_out, H, W)`, frames `t0+T_in … t0+T_in+T_out−1`
   - Batched by the DataLoader: `X (B, T_in, C_in, H, W)`, `Y (B, T_out, C_out, H, W)`
   - Defaults: `T_in = 6` (1 hour), `T_out = 1` (10 minutes ahead)
-- **Normalisation:** per-channel min-max to [0, 1] (`MinMaxNormalizer`), fitted on the
-  **training segment only**. With `data.log_transform: true`, `log1p` is applied first. The
-  fitted statistics are saved in the checkpoint and reused at evaluation time.
+- **Normalisation** (`Normalizer`), fitted on the **training segment only**:
+  - `data.scaler: minmax` (run 1): per-channel min-max to [0, 1].
+  - `data.scaler: standard` (v2): per-channel mean/std. Better for this heavy-tailed data: with
+    min-max, a few very busy cells push almost all values close to 0.
+  - With `data.log_transform: true`, `log1p` is applied first. The fitted statistics (and the
+    scaler type) are saved in the checkpoint and reused at evaluation time.
+- **Calendar inputs** (`data.time_features: true`): 4 extra input channels per frame,
+  sin/cos of the time of day and of the position in the week, each a constant plane over the
+  grid. They are computed from the time index, so no extra data is needed.
 - **Activity mask:** cells whose mean target activity over the training period is exactly 0 are
   excluded from the loss and the metrics (`data.mask_inactive: true`).
 - **Spatial crop:** `data.crop: [r0, r1, c0, c1]` trains on a sub-grid (for quick experiments
@@ -293,8 +327,10 @@ Output Ŷ  (B, T_out, C_out, H, W)
 
 | Configuration | Parameters |
 |---|---|
-| Default (hidden 64, 2 layers, refine 2×32), 1 input channel | 464,290 |
-| Default, 5 input channels | 473,506 |
+| Default (hidden 64, 2 layers, refine 2×32), 1 input channel (run 1) | 464,290 |
+| Default, 1 input + 4 calendar channels (v2) | 473,506 |
+| Default, 5 traffic inputs | 473,506 |
+| Default, 5 traffic inputs + 4 calendar channels | 482,722 |
 
 ---
 
@@ -309,7 +345,9 @@ python -m src.train --config configs/default.yaml
 | Loss | masked **MSE** (default) or masked **Huber** (`training.loss: huber`, `huber_delta` on the normalised scale) |
 | Optimiser | Adam, lr `1e-3`, optional weight decay |
 | Scheduler | `ReduceLROnPlateau` on val loss (factor 0.5, patience 5, min lr 1e-6) |
-| Early stopping | patience 10 on val loss (`min_delta` configurable) |
+| Early stopping | patience 10 on val loss; `min_delta` (absolute) and `min_delta_rel` (relative, v2: 0.001) set what counts as an improvement |
+| Reference loss | persistence scored once on the validation set; each val loss is also logged as "N× persistence" |
+| Resume | `--resume` continues from `last_checkpoint.pt` (written after every epoch) |
 | Epochs | up to 100 |
 | Batch size | 16 |
 | Gradient clipping | max norm 1.0 |
@@ -318,15 +356,21 @@ python -m src.train --config configs/default.yaml
 | Seeding | Python, NumPy and PyTorch (`seed: 42`) |
 | Debug caps | `max_train_batches`, `max_eval_batches` |
 
-Each epoch logs train loss, val loss, learning rate and duration to the console,
-`outputs/<run>/train.log` and `outputs/<run>/history.csv`. When the validation loss improves,
-the checkpoint `outputs/<run>/best_model.pt` is overwritten.
+Each epoch logs train loss, val loss (also relative to persistence), the learning rate used in
+that epoch and the duration to the console, `outputs/<run>/train.log` and
+`outputs/<run>/history.csv`. Losses are averaged per sample. When the validation loss improves,
+`outputs/<run>/best_model.pt` is overwritten; `last_checkpoint.pt` is overwritten every epoch for
+resuming (it is git-ignored).
 
 ### Checkpoint contents
 
-`model_state`, `config`, `epoch`, `val_loss`, `normalizer` (per-channel mins/maxs and the log
-flag), `input_channels`, `target_channels`, `residual_channels` and `features`. It contains only
-plain types, so it loads with `torch.load(..., weights_only=True)`.
+`best_model.pt`: `model_state`, `config`, `epoch`, `val_loss`, `normalizer` (scaler type,
+per-channel offset/scale, log flag), `input_channels`, `target_channels`, `residual_channels` and
+`features`. It contains only plain types, so it loads with `torch.load(..., weights_only=True)`.
+Run-1 checkpoints (with `mins`/`maxs`) still load.
+
+`last_checkpoint.pt`: model, optimiser, scheduler, AMP scaler and early-stopping state, plus the
+epoch number.
 
 ### Memory and speed
 
@@ -355,19 +399,25 @@ python -m src.evaluate --config configs/default.yaml [--checkpoint path/to/best_
 
 ### Baselines
 
-Both need every target feature to also be an input feature; otherwise they are skipped.
+| Name | Prediction | Needs |
+|---|---|---|
+| `Persistence` | the last observed frame, repeated for every horizon ("previous timestep") | targets are also inputs |
+| `WindowMean` | the mean of the `T_in` input frames (historical average) | targets are also inputs |
+| `SeasonalDaily` | the frame at the same time one day earlier | test period starts ≥ 1 day into the data |
+| `SeasonalWeekly` | the frame at the same time one week earlier | test period starts ≥ 1 week into the data |
 
-| Name | Prediction |
-|---|---|
-| `Persistence` | the last observed frame, repeated for every horizon ("previous timestep") |
-| `WindowMean` | the mean of the `T_in` input frames (historical average) |
+The seasonal baselines look back into the training/validation period, which is legitimate: at
+forecast time those frames are already known.
+
+`metrics.json` also has `ConvLSTM.skill_vs_baselines_%`: for each baseline, the percentage of its
+RMSE and MAE that the ConvLSTM removes (positive = ConvLSTM better).
 
 ### Plots
 
 | File | Content |
 |---|---|
 | `heatmaps.png` | for `num_plot_samples` random test frames: actual, ConvLSTM prediction and absolute error (north up; blue ramp for traffic, orange ramp for error, colour capped at the 99.5th percentile) |
-| `cell_timeseries.png` | 1-step-ahead test series for one cell: actual vs ConvLSTM vs persistence. The cell is `evaluation.plot_cell` or a random cell from the 10% busiest. |
+| `cell_timeseries.png` | 1-step-ahead test series for one cell over the last `evaluation.plot_steps` steps (default 3 days): actual vs ConvLSTM vs persistence. The cell is `evaluation.plot_cell` or a random cell from the 10% busiest. |
 | `loss_curve.png` | train and validation loss per epoch (log scale) |
 
 ---
@@ -403,7 +453,9 @@ overrides only what it needs. Relative paths are resolved against the project ro
 | `grid_size` | 100 | grid side length |
 | `max_days` | null | preprocess only the first N days |
 | `fill_method` | zero | `zero` or `ffill_zero` |
-| `log_transform` | false | apply `log1p` before min-max scaling |
+| `log_transform` | false | apply `log1p` before scaling |
+| `scaler` | minmax | `minmax` or `standard` (v2 uses `standard`) |
+| `time_features` | false | add sin/cos time-of-day and day-of-week input channels (v2: true) |
 | `mask_inactive` | true | exclude never-active cells from loss and metrics |
 | `t_in` | 6 | input frames (1 hour) |
 | `t_out` | 1 | predicted frames |
@@ -435,12 +487,14 @@ overrides only what it needs. Relative paths are resolved against the project ro
 | `loss` | mse | `mse` or `huber` |
 | `huber_delta` | 0.05 | on the normalised scale |
 | `patience` | 10 | early-stopping patience |
-| `min_delta` | 0.0 | minimum improvement |
+| `min_delta` | 0.0 | minimum absolute improvement that resets patience |
+| `min_delta_rel` | 0.0 | minimum relative improvement that resets patience (v2: 0.001) |
 | `scheduler_patience` | 5 | ReduceLROnPlateau |
 | `scheduler_factor` | 0.5 | |
 | `min_lr` | 1e-6 | |
 | `grad_clip` | 1.0 | max gradient norm |
 | `amp` | true | mixed precision (CUDA only) |
+| `max_hours` | null | stop before this wall-clock budget is exceeded (Kaggle: 8.5) |
 | `max_train_batches` | null | debug cap |
 | `max_eval_batches` | null | debug cap |
 
@@ -451,6 +505,7 @@ overrides only what it needs. Relative paths are resolved against the project ro
 | `mape_threshold` | 1.0 | minimum true value counted in MAPE |
 | `num_plot_samples` | 3 | heatmap rows |
 | `plot_cell` | null | `[row, col]` in the (cropped) grid; null = random busy cell |
+| `plot_steps` | 432 | last N test steps in `cell_timeseries.png`; null = all |
 
 ---
 
@@ -462,12 +517,16 @@ so numbers, booleans, lists and `null` all work. Run commands from the project r
 | Command | Purpose |
 |---|---|
 | `python -m src.dataset --config ...` | build `tensor.npy` and `meta.json` |
-| `python -m src.train --config ...` | train and save the best checkpoint |
+| `python -m src.train --config ... [--resume]` | train and save the best checkpoint; `--resume` continues an interrupted run |
 | `python -m src.evaluate --config ... [--checkpoint ...]` | metrics and plots |
 
 Examples:
 
 ```bash
+# the v2 settings used on Kaggle
+python -m src.train --config configs/default.yaml \
+  --set data.scaler=standard data.time_features=true training.min_delta_rel=0.001 paths.output_dir=outputs/v2
+
 # all five features in, internet out, 3 steps (30 min) ahead
 python -m src.train --config configs/default.yaml \
   --set data.input_features=[smsin,smsout,callin,callout,internet] data.t_out=3 paths.output_dir=outputs/all5_h3
@@ -487,7 +546,7 @@ you used for training.
 
 ## 13. Results
 
-### Real data: full run on Kaggle (`outputs/kaggle/`)
+### Run 1: full run on Kaggle (`outputs/kaggle/`), min-max scaling, no calendar inputs
 
 Setup:
 
@@ -523,8 +582,29 @@ Observations:
   December, then the holidays) have lower overall traffic, so their errors are smaller on the
   normalised scale. It is not a sign of leakage.
 - **The normalised losses are very small (~1e-6).** Min-max scaling with a few very busy cells
-  pushes most values close to 0. This is the main motivation for trying
-  `data.log_transform: true` next.
+  pushes most values close to 0. This motivated the switch to standard scaling in v2.
+- Run 1 was compared only with persistence and the window mean; the seasonal baselines were
+  added in v2.
+
+### Run 2: v2 settings (in progress)
+
+Same data, split, task and model size as run 1 (473,506 parameters: the 4 calendar channels add
+9,216), with `scaler: standard`, `time_features: true` and `min_delta_rel: 0.001`. Notebook:
+`kaggle/convlstm_milano_kaggle.ipynb`.
+
+The first attempt (2026-11-16, Tesla T4) was stopped after **18 epochs**, before evaluation, so
+there are **no test results yet**. The interim validation figures:
+
+| Item | Value |
+|---|---|
+| Preprocessing | about 6.5 minutes, same tensor as run 1 |
+| Time per epoch | about 157 s |
+| Training loss | 2.08e-2 at epoch 18 (run 1: about 6e-6) |
+| Best validation loss | 6.61e-3 at epoch 16 = **0.804× the persistence loss** (about 20% less squared error than "no change") |
+| Learning rate | still 1e-3 (not yet reduced by the scheduler) |
+
+The test-set table (ConvLSTM against all four baselines, and against run 1) will be added when a
+complete run finishes.
 
 ---
 
@@ -536,7 +616,9 @@ Observations:
 | Inactive cells | masked from loss and metrics | Never-active cells add only trivially easy zeros. |
 | Country codes | summed | The target is total traffic per cell. |
 | Timestamps | UTC → Europe/Rome, absolute indexing | Days line up with the local calendar, and boundary spill-over lands correctly. |
-| Normalisation | per-channel min-max fitted on train only, optional `log1p` | Prevents leakage; `log1p` handles heavy tails. |
+| Normalisation | per-channel standard (v2) or min-max (run 1), fitted on train only, optional `log1p` | Prevents leakage; standard scaling keeps the heavy-tailed data from collapsing near 0. |
+| Calendar inputs | sin/cos of time of day and day of week, as constant planes | Gives the model the clock without extra data; sin/cos makes 23:50 and 00:00 neighbours. |
+| Baselines | persistence, window mean, same time yesterday, same time last week | A forecaster has to beat the simple and the seasonal answers to be worth using. |
 | Split | chronological, windows confined to one split | No temporal leakage. |
 | Multi-step output | direct, all horizons at once | Simple and fast, with no error accumulation from an autoregressive rollout. |
 | Storage | float32 `.npy` memmap | The full 1.8 GB tensor never has to fit in RAM. |
@@ -570,10 +652,11 @@ Observations:
 | `discover_raw_files(raw_dir)` | find and sort daily files by date |
 | `read_raw_file(path, features)` | parse one day (either format), local time, sum over countries |
 | `preprocess(...)` | build `tensor.npy` and `meta.json` |
-| `MinMaxNormalizer` | `normalize` / `denormalize` (NumPy or torch), `state_dict` / `from_state_dict` |
+| `Normalizer` | min-max or standard scaling; `normalize` / `denormalize` (NumPy or torch), `state_dict` / `from_state_dict` |
 | `compute_train_statistics(...)` | fit the normalizer and the activity map on the training segment |
+| `calendar_features(t_idx, origin, interval)` | sin/cos time-of-day and day-of-week values |
 | `split_bounds(T, ratios)` | chronological split ranges |
-| `MilanoTrafficDataset` | sliding windows over one split; `target_time_index(i)` |
+| `MilanoTrafficDataset` | sliding windows over one split; `target_time_index(i)`, `raw_target_frames(t)` (for seasonal baselines), `num_input_channels` |
 | `DataBundle` | datasets, normalizer, mask, activity, meta, channel indices |
 | `build_datasets(cfg, normalizer)` | create the train/val/test datasets |
 | `build_dataloaders(cfg, datasets)` | wrap them in DataLoaders |
@@ -594,9 +677,9 @@ Observations:
 | Name | Purpose |
 |---|---|
 | `masked_loss(pred, target, mask, kind, delta)` | MSE or Huber over unmasked cells |
-| `EarlyStopping` | patience-based stopping |
-| `run_epoch(...)` | one train or eval pass (AMP, clipping, batch caps) |
-| `train(cfg)` | full training loop; returns the checkpoint path |
+| `EarlyStopping` | patience-based stopping with absolute and relative thresholds; saveable state |
+| `run_epoch(...)` | one train or eval pass (AMP, clipping, batch caps); with `model=None` scores persistence |
+| `train(cfg, resume)` | full training loop; returns the checkpoint path |
 
 ### `src/evaluate.py`
 
@@ -615,10 +698,11 @@ Every run writes these to `paths.output_dir`:
 | File | Written by | Content |
 |---|---|---|
 | `best_model.pt` | train | best checkpoint (see §9) |
+| `last_checkpoint.pt` | train | resume state, overwritten every epoch (git-ignored) |
 | `config_used.json` | train | exact config of the run |
 | `history.csv` | train | epoch, train_loss, val_loss, lr, seconds |
 | `train.log` | train | training log |
-| `metrics.json` | evaluate | overall, per-horizon and per-channel metrics for all models, plus notes (units, active cells, MAPE threshold, test windows, checkpoint) |
+| `metrics.json` | evaluate | overall, per-horizon and per-channel metrics for all models, the ConvLSTM's skill against each baseline, plus notes (units, active cells, MAPE threshold, test windows, checkpoint) |
 | `metrics_per_horizon.csv` | evaluate | model, horizon, RMSE, MAE, MAPE_% |
 | `evaluate.log` | evaluate | evaluation log and metrics table |
 | `heatmaps.png`, `cell_timeseries.png`, `loss_curve.png` | evaluate | plots |
@@ -632,6 +716,9 @@ Preprocessing writes `tensor.npy` and `meta.json` to `paths.processed_dir`.
 | Symptom | Cause / fix |
 |---|---|
 | `OSError: [Errno 22] Invalid argument: '...png'` during evaluation | Windows locks a PNG that is open in an image viewer. Close the viewer, or evaluate into another folder with `--set paths.output_dir=...` and `--checkpoint`. |
+| `HTTP Error 400 ... required Guestbook response` from Dataverse | Dataverse blocks scripted downloads; use `scripts/download_kaggle.py` or download by hand. |
+| Kaggle run shows `CANCEL_ACKNOWLEDGED` / no outputs | The version was cancelled or only run in the editor. Use "Save Version → Save & Run All (Commit)" and don't cancel it. |
+| Training was interrupted | Re-run the same command with `--resume`. |
 | `No 'sms-call-internet-mi-YYYY-MM-DD' files found` | Wrong `paths.raw_dir`, or the file names lack the date pattern. |
 | `tensor.npy not found` | Run `python -m src.dataset` first, with the same `processed_dir`. |
 | `Features [...] not in the processed tensor` | Re-run preprocessing with those features in `data.features`. |
@@ -646,19 +733,19 @@ Preprocessing writes `tensor.npy` and `meta.json` to `paths.processed_dir`.
 
 ## 18. Known limitations and next steps
 
-- **One real-data configuration run so far** (internet only, 1 step ahead). Next experiments:
-  - `log_transform: true`
+- **Run 2 (v2 settings) has not finished yet**, so the v2 improvements are only supported by
+  validation figures so far (§13). Run 1 and run 2 change several things at once; separate runs
+  would be needed to credit each change individually.
+- **Only internet, 1 step ahead, has been run on real data.** Next experiments:
   - all five features as input
   - `t_out: 3` or `6` for 30–60 minutes ahead
+  - `log_transform: true` together with standard scaling
+- **The test period is the Christmas/New Year fortnight**, which is atypical traffic; a different
+  split (or several) would show how well results generalise.
 - **No GPU on the development machine.** Full-grid training is done on Kaggle (§3).
-- **Grid orientation** (IDs running south→north) should be checked against
-  `milano-grid.geojson` if exact geography matters.
 - **Possible extensions:**
-  - a daily-seasonal baseline (same time yesterday)
-  - calendar and time-of-day features
   - an encoder–decoder / seq2seq head for longer horizons
   - a Conv3d refinement head
   - hyperparameter sweeps
   - multi-target training on all five channels
   - TensorBoard logging
-- `scikit-learn` is pinned as requested but unused; it can be removed from `requirements.txt`.

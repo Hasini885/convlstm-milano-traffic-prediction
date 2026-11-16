@@ -1,10 +1,12 @@
 # Data: too large for git. Raw files come from Kaggle/Dataverse; the rest is regenerated.
 data/raw/*
 data/processed/*
-data/synthetic/
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 *.npy
+
+# Resume state (model + optimiser); only best_model.pt is kept
+last_checkpoint.pt
 
 # Python / environments
 __pycache__/

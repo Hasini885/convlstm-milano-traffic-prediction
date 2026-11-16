@@ -1,15 +1,17 @@
-# Full run on a Kaggle GPU notebook. The notebook sets paths.raw_dir to wherever the raw files
-# are found under /kaggle/input (or downloaded to).
+# Full run on a Kaggle GPU with the v2 improvements switched on.
 _base_: default.yaml
 
 paths:
-  raw_dir: /kaggle/input
-  processed_dir: /kaggle/temp/processed   # large intermediate tensor, kept out of the notebook output
-  output_dir: /kaggle/working/outputs/convlstm_internet
+  raw_dir: /kaggle/input            # replaced by the detected folder (see the notebook)
+  processed_dir: /kaggle/temp/processed
+  output_dir: /kaggle/working/outputs/convlstm_internet_v2
 
 data:
   num_workers: 2
+  scaler: standard                  # mean/std scaling instead of min-max (losses near 1, not 1e-6)
+  time_features: true               # sin/cos time-of-day and day-of-week input channels
 
 training:
   batch_size: 16
-  max_hours: 8.5                   # Kaggle sessions are limited to 12 h; leave time for evaluation
+  min_delta_rel: 0.001              # improvements under 0.1% don't reset early-stopping patience
+  max_hours: 8.5                    # Kaggle sessions are limited to 12 h; leave time for evaluation

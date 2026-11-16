@@ -5,7 +5,7 @@ Pipeline
 1. ``preprocess``: stream the daily raw files, aggregate over country codes, and scatter every
    record into a ``(T, C, H, W)`` float32 tensor stored as ``.npy`` (memory-mapped, so the full
    ~1.8 GB, 5-channel tensor never has to fit in RAM at once).
-2. ``build_datasets``: chronologically split the time axis, fit min-max statistics on the
+2. ``build_datasets``: chronologically split the time axis, fit the scaling statistics on the
    training segment only, and wrap each segment in a sliding-window ``MilanoTrafficDataset``.
 
 Run ``python -m src.dataset --config configs/default.yaml`` to execute step 1.
@@ -122,7 +122,6 @@ def read_raw_file(path: str | Path, features: Sequence[str] = FEATURES) -> pd.Da
     if missing:
         raise ValueError(f"{path.name}: missing columns {sorted(missing)}; found {list(df.columns)}")
 
-    df = df[["time", "cell_id", *features]]
     df["time"] = _to_local_naive(df["time"])
     # min_count=1 keeps NaN when every country row for that field was empty.
     return df.groupby(["time", "cell_id"], as_index=False, sort=False)[list(features)].sum(min_count=1)
@@ -249,21 +248,33 @@ def preprocess(
 # --------------------------------------------------------------------------------------------
 # Normalisation and statistics
 # --------------------------------------------------------------------------------------------
-@dataclass
-class MinMaxNormalizer:
-    """Per-channel min-max scaling to [0, 1], with an optional ``log1p`` applied first.
+SCALERS = ("minmax", "standard")
+CALENDAR_CHANNELS = 4  # sin/cos of the time of day, sin/cos of the position in the week
 
-    ``mins`` and ``maxs`` are indexed by channel in the *processed tensor*, so the same object
+
+@dataclass
+class Normalizer:
+    """Per-channel affine scaling ``(x - offset) / scale``, with an optional ``log1p`` applied first.
+
+    * ``kind="minmax"``: ``offset = min``, ``scale = max - min`` (values end up in [0, 1]).
+    * ``kind="standard"``: ``offset = mean``, ``scale = std`` (zero mean, unit variance).
+
+    Traffic is heavy-tailed: a handful of city-centre cells are hundreds of times busier than the
+    median cell. Min-max scaling therefore squeezes almost every value into the bottom 1% of the
+    range and the loss ends up around 1e-6; standardising keeps values and losses near 1.
+
+    ``offset`` and ``scale`` are indexed by channel in the *processed tensor*, so the same object
     serves any subset of input or target channels via the ``channels`` argument.
     """
 
-    mins: np.ndarray
-    maxs: np.ndarray
+    offset: np.ndarray
+    scale: np.ndarray
     log_transform: bool = False
+    kind: str = "minmax"
 
     def _params(self, channels: Sequence[int], like: np.ndarray | torch.Tensor) -> tuple[Any, Any]:
-        lo = self.mins[list(channels)].astype(np.float32)
-        scale = (self.maxs[list(channels)] - lo).astype(np.float32)
+        lo = self.offset[list(channels)].astype(np.float32)
+        scale = self.scale[list(channels)].astype(np.float32)
         scale = np.where(scale > 0, scale, 1.0).astype(np.float32)
         lo, scale = lo.reshape(-1, 1, 1), scale.reshape(-1, 1, 1)
         if isinstance(like, torch.Tensor):
@@ -272,7 +283,7 @@ class MinMaxNormalizer:
         return lo, scale
 
     def normalize(self, x: np.ndarray | torch.Tensor, channels: Sequence[int]) -> Any:
-        """Scale ``x`` of shape ``(..., len(channels), H, W)`` to roughly [0, 1]."""
+        """Scale ``x`` of shape ``(..., len(channels), H, W)``."""
         if self.log_transform:
             x = torch.log1p(x) if isinstance(x, torch.Tensor) else np.log1p(x)
         lo, scale = self._params(channels, x)
@@ -287,26 +298,35 @@ class MinMaxNormalizer:
         return x
 
     def state_dict(self) -> dict[str, Any]:
-        return {"mins": self.mins.tolist(), "maxs": self.maxs.tolist(), "log_transform": self.log_transform}
+        return {"kind": self.kind, "offset": self.offset.tolist(), "scale": self.scale.tolist(),
+                "log_transform": self.log_transform}
 
     @classmethod
-    def from_state_dict(cls, state: dict[str, Any]) -> "MinMaxNormalizer":
-        return cls(np.asarray(state["mins"], dtype=np.float64), np.asarray(state["maxs"], dtype=np.float64),
-                   bool(state["log_transform"]))
+    def from_state_dict(cls, state: dict[str, Any]) -> "Normalizer":
+        if "mins" in state:  # checkpoints written before the ``standard`` scaler existed
+            mins = np.asarray(state["mins"], dtype=np.float64)
+            return cls(mins, np.asarray(state["maxs"], dtype=np.float64) - mins, bool(state["log_transform"]), "minmax")
+        return cls(np.asarray(state["offset"], dtype=np.float64), np.asarray(state["scale"], dtype=np.float64),
+                   bool(state["log_transform"]), state["kind"])
 
 
 def compute_train_statistics(
-    tensor: np.ndarray, t_end: int, target_channels: Sequence[int], log_transform: bool = False, chunk: int = 256
-) -> tuple[MinMaxNormalizer, np.ndarray]:
+    tensor: np.ndarray, t_end: int, target_channels: Sequence[int], log_transform: bool = False,
+    scaler: str = "minmax", chunk: int = 256,
+) -> tuple[Normalizer, np.ndarray]:
     """Fit the normalizer and the mean activity map on ``tensor[:t_end]`` (the training segment only).
 
     Returns:
         ``(normalizer, activity)``, where ``activity`` is the ``(H, W)`` mean of the target
         channels over the training period. Cells where it is 0 had no activity at all.
     """
+    if scaler not in SCALERS:
+        raise ValueError(f"Unknown data.scaler {scaler!r}; choose one of {SCALERS}")
     C, H, W = tensor.shape[1:]
     mins = np.full(C, np.inf)
     maxs = np.full(C, -np.inf)
+    total = np.zeros(C)
+    total_sq = np.zeros(C)
     activity = np.zeros((H, W), dtype=np.float64)
     for start in range(0, t_end, chunk):
         block = np.asarray(tensor[start:min(start + chunk, t_end)], dtype=np.float64)
@@ -315,8 +335,29 @@ def compute_train_statistics(
             block = np.log1p(block)
         mins = np.minimum(mins, block.min(axis=(0, 2, 3)))
         maxs = np.maximum(maxs, block.max(axis=(0, 2, 3)))
+        total += block.sum(axis=(0, 2, 3))
+        total_sq += (block ** 2).sum(axis=(0, 2, 3))
     activity /= t_end * len(target_channels)
-    return MinMaxNormalizer(mins, maxs, log_transform), activity.astype(np.float32)
+    if scaler == "minmax":
+        offset, scale = mins, maxs - mins
+    else:
+        n = t_end * H * W
+        offset = total / n
+        scale = np.sqrt(np.maximum(total_sq / n - offset ** 2, 0.0))
+    return Normalizer(offset, scale, log_transform, scaler), activity.astype(np.float32)
+
+
+def calendar_features(t_idx: np.ndarray, origin: pd.Timestamp, interval_minutes: int) -> np.ndarray:
+    """``(len(t_idx), 4)`` float32: sin/cos of the time of day and of the position in the week.
+
+    One hour of history cannot tell 08:00 (traffic about to rise) from 20:00 (about to fall); these
+    features give the model the clock and the weekday.
+    """
+    minutes = (origin.dayofweek * 1440 + origin.hour * 60 + origin.minute
+               + np.asarray(t_idx, dtype=np.int64) * interval_minutes)
+    day = 2 * np.pi * (minutes % 1440) / 1440
+    week = 2 * np.pi * (minutes % 10080) / 10080
+    return np.stack([np.sin(day), np.cos(day), np.sin(week), np.cos(week)], axis=1).astype(np.float32)
 
 
 def split_bounds(num_steps: int, ratios: Sequence[float]) -> list[tuple[int, int]]:
@@ -337,7 +378,8 @@ class MilanoTrafficDataset(Dataset):
     Every window lies entirely inside ``[t_start, t_end)``, so no target from a later split ever
     appears in an earlier one. Item ``i`` is::
 
-        X: (t_in,  C_in,  H, W)   frames t0 .. t0+t_in-1         (normalised)
+        X: (t_in,  C_in,  H, W)   frames t0 .. t0+t_in-1         (normalised; 4 calendar channels
+                                  are appended when ``calendar`` is given)
         Y: (t_out, C_out, H, W)   frames t0+t_in .. t0+t_in+t_out-1 (normalised)
 
     with ``t0 = t_start + i * stride``. The tensor is opened lazily as a memmap inside each worker,
@@ -353,9 +395,10 @@ class MilanoTrafficDataset(Dataset):
         t_out: int,
         input_channels: Sequence[int],
         target_channels: Sequence[int],
-        normalizer: MinMaxNormalizer,
+        normalizer: Normalizer,
         stride: int = 1,
         crop: Sequence[int] | None = None,
+        calendar: tuple[pd.Timestamp, int] | None = None,
     ) -> None:
         self.tensor_path = str(tensor_path)
         self.t_start, self.t_end = t_start, t_end
@@ -364,6 +407,8 @@ class MilanoTrafficDataset(Dataset):
         self.target_channels = list(target_channels)
         self.normalizer = normalizer
         self.crop = tuple(crop) if crop else None
+        self.calendar = calendar  # (origin, interval_minutes), or None for no calendar channels
+        self.num_input_channels = len(self.input_channels) + (CALENDAR_CHANNELS if calendar else 0)
         self.num_windows = (t_end - t_start - t_in - t_out) // stride + 1
         if self.num_windows <= 0:
             raise ValueError(f"Segment [{t_start}, {t_end}) is too short for t_in={t_in}, t_out={t_out}")
@@ -392,7 +437,20 @@ class MilanoTrafficDataset(Dataset):
         y = np.asarray(arr[t0 + self.t_in:t0 + self.t_in + self.t_out][:, self.target_channels], dtype=np.float32)
         x = self.normalizer.normalize(x, self.input_channels).astype(np.float32)
         y = self.normalizer.normalize(y, self.target_channels).astype(np.float32)
+        if self.calendar is not None:
+            feats = calendar_features(np.arange(t0, t0 + self.t_in), *self.calendar)
+            planes = np.broadcast_to(feats[:, :, None, None], (self.t_in, CALENDAR_CHANNELS, *x.shape[2:]))
+            x = np.concatenate([x, planes], axis=1)
         return torch.from_numpy(x), torch.from_numpy(y)
+
+    def raw_target_frames(self, t_idx: np.ndarray) -> np.ndarray:
+        """Target channels at absolute time indices ``t_idx`` (any shape), in original units.
+
+        Used by the seasonal baselines, which look up the frame one day or one week before a target.
+        """
+        t_idx = np.asarray(t_idx)
+        frames = np.asarray(self._data()[t_idx.ravel()][:, self.target_channels], dtype=np.float32)
+        return frames.reshape(*t_idx.shape, *frames.shape[1:])
 
 
 @dataclass
@@ -400,7 +458,7 @@ class DataBundle:
     """Everything produced by :func:`build_datasets`."""
 
     datasets: dict[str, MilanoTrafficDataset]
-    normalizer: MinMaxNormalizer
+    normalizer: Normalizer
     mask: torch.Tensor | None  # (H, W) bool over the (cropped) grid, or None
     activity: np.ndarray  # (H, W) mean training activity of the target channels (cropped)
     meta: dict[str, Any]
@@ -415,7 +473,7 @@ def _channel_indices(names: Sequence[str], available: Sequence[str]) -> list[int
     return [list(available).index(n) for n in names]
 
 
-def build_datasets(cfg: dict[str, Any], normalizer: MinMaxNormalizer | None = None) -> DataBundle:
+def build_datasets(cfg: dict[str, Any], normalizer: Normalizer | None = None) -> DataBundle:
     """Create train/val/test datasets from the processed tensor described by ``cfg``.
 
     Args:
@@ -435,7 +493,8 @@ def build_datasets(cfg: dict[str, Any], normalizer: MinMaxNormalizer | None = No
     tensor = np.load(tensor_path, mmap_mode="r")
     bounds = split_bounds(tensor.shape[0], dcfg["split"])
     fitted, activity = compute_train_statistics(
-        tensor, bounds[0][1], target_channels, bool(dcfg.get("log_transform", False)))
+        tensor, bounds[0][1], target_channels, bool(dcfg.get("log_transform", False)),
+        normalizer.kind if normalizer else dcfg.get("scaler", "minmax"))
     normalizer = normalizer or fitted
 
     crop = dcfg.get("crop")
@@ -443,11 +502,13 @@ def build_datasets(cfg: dict[str, Any], normalizer: MinMaxNormalizer | None = No
         r0, r1, c0, c1 = crop
         activity = activity[r0:r1, c0:c1]
     mask = torch.from_numpy(activity > 0) if dcfg.get("mask_inactive", True) else None
+    calendar = ((pd.Timestamp(meta["origin"]), int(meta["interval_minutes"]))
+                if dcfg.get("time_features", False) else None)
 
     datasets = {
         name: MilanoTrafficDataset(
             tensor_path, start, end, dcfg["t_in"], dcfg["t_out"], input_channels, target_channels,
-            normalizer, stride=dcfg.get("stride", 1) if name == "train" else 1, crop=crop)
+            normalizer, stride=dcfg.get("stride", 1) if name == "train" else 1, crop=crop, calendar=calendar)
         for name, (start, end) in zip(("train", "val", "test"), bounds)
     }
     return DataBundle(datasets, normalizer, mask, activity, meta, input_channels, target_channels)
@@ -456,11 +517,14 @@ def build_datasets(cfg: dict[str, Any], normalizer: MinMaxNormalizer | None = No
 def build_dataloaders(cfg: dict[str, Any], datasets: dict[str, MilanoTrafficDataset]) -> dict[str, DataLoader]:
     """Wrap datasets in DataLoaders. Only the training loader is shuffled."""
     workers = int(cfg["data"].get("num_workers", 0))
+    # A dedicated generator makes the shuffle order depend only on the seed.
+    generator = torch.Generator().manual_seed(int(cfg.get("seed", 42)))
     return {
         name: DataLoader(
             ds,
             batch_size=cfg["training"]["batch_size"],
             shuffle=(name == "train"),
+            generator=generator if name == "train" else None,
             num_workers=workers,
             pin_memory=torch.cuda.is_available(),
             persistent_workers=workers > 0,

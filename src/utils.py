@@ -91,8 +91,8 @@ def get_device(preference: str = "auto") -> torch.device:
     return torch.device(preference)
 
 
-def get_logger(name: str, log_file: str | Path | None = None) -> logging.Logger:
-    """Create a logger writing to stdout and, optionally, to ``log_file``."""
+def get_logger(name: str, log_file: str | Path | None = None, append: bool = False) -> logging.Logger:
+    """Create a logger writing to stdout and, optionally, to ``log_file`` (overwritten unless ``append``)."""
     logger = logging.getLogger(name)
     logger.setLevel(logging.INFO)
     logger.handlers.clear()
@@ -103,7 +103,7 @@ def get_logger(name: str, log_file: str | Path | None = None) -> logging.Logger:
     logger.addHandler(stream)
     if log_file is not None:
         Path(log_file).parent.mkdir(parents=True, exist_ok=True)
-        fh = logging.FileHandler(log_file, encoding="utf-8")
+        fh = logging.FileHandler(log_file, mode="a" if append else "w", encoding="utf-8")
         fh.setFormatter(fmt)
         logger.addHandler(fh)
     return logger
