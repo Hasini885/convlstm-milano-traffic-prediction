@@ -73,6 +73,8 @@ notebook switches them on through `configs/kaggle.yaml`.
 ```
 convlstm_milano/
 ├── README.md                     # this file
+├── PROJECT_OVERVIEW.md           # plain-language summary of the project and results
+├── PROJECT_REPORT.md             # full report: findings, three runs, analysis, presentation guide, Q&A
 ├── requirements.txt              # pinned dependencies
 ├── configs/
 │   ├── default.yaml              # full-data hyperparameters (every option, with comments)
