@@ -1,0 +1,67 @@
+$ python -m src.dataset --config configs/kaggle.yaml --set paths.raw_dir=/kaggle/input/datasets/dkgmgo/telecom-italia-milan/data data.interval_minutes=10
+2026-11-16 17:40:31 | INFO | Building tensor (8928, 5, 100, 100) from 62 files [2013-11-01 .. 2014-01-01] -> /kaggle/temp/processed/tensor.npy
+2026-11-16 17:40:37 | INFO |   [1/62] sms-call-internet-mi-2013-11-01.txt: 1,439,982 (time, cell) records
+2026-11-16 17:40:44 | INFO |   [2/62] sms-call-internet-mi-2013-11-02.txt: 1,439,986 (time, cell) records
+2026-11-16 17:40:49 | INFO |   [3/62] sms-call-internet-mi-2013-11-03.txt: 1,439,963 (time, cell) records
+2026-11-16 17:40:56 | INFO |   [4/62] sms-call-internet-mi-2013-11-04.txt: 1,439,976 (time, cell) records
+2026-11-16 17:41:03 | INFO |   [5/62] sms-call-internet-mi-2013-11-05.txt: 1,439,977 (time, cell) records
+2026-11-16 17:41:11 | INFO |   [6/62] sms-call-internet-mi-2013-11-06.txt: 1,439,980 (time, cell) records
+2026-11-16 17:41:18 | INFO |   [7/62] sms-call-internet-mi-2013-11-07.txt: 1,439,981 (time, cell) records
+2026-11-16 17:41:25 | INFO |   [8/62] sms-call-internet-mi-2013-11-08.txt: 1,439,976 (time, cell) records
+2026-11-16 17:41:31 | INFO |   [9/62] sms-call-internet-mi-2013-11-09.txt: 1,439,978 (time, cell) records
+2026-11-16 17:41:37 | INFO |   [10/62] sms-call-internet-mi-2013-11-10.txt: 1,439,983 (time, cell) records
+2026-11-16 17:41:44 | INFO |   [11/62] sms-call-internet-mi-2013-11-11.txt: 1,439,985 (time, cell) records
+2026-11-16 17:41:51 | INFO |   [12/62] sms-call-internet-mi-2013-11-12.txt: 1,439,975 (time, cell) records
+2026-11-16 17:41:58 | INFO |   [13/62] sms-call-internet-mi-2013-11-13.txt: 1,439,975 (time, cell) records
+2026-11-16 17:42:05 | INFO |   [14/62] sms-call-internet-mi-2013-11-14.txt: 1,439,975 (time, cell) records
+2026-11-16 17:42:12 | INFO |   [15/62] sms-call-internet-mi-2013-11-15.txt: 1,439,971 (time, cell) records
+2026-11-16 17:42:18 | INFO |   [16/62] sms-call-internet-mi-2013-11-16.txt: 1,439,967 (time, cell) records
+2026-11-16 17:42:24 | INFO |   [17/62] sms-call-internet-mi-2013-11-17.txt: 1,439,970 (time, cell) records
+2026-11-16 17:42:30 | INFO |   [18/62] sms-call-internet-mi-2013-11-18.txt: 1,439,970 (time, cell) records
+2026-11-16 17:42:37 | INFO |   [19/62] sms-call-internet-mi-2013-11-19.txt: 1,439,979 (time, cell) records
+2026-11-16 17:42:44 | INFO |   [20/62] sms-call-internet-mi-2013-11-20.txt: 1,439,967 (time, cell) records
+2026-11-16 17:42:51 | INFO |   [21/62] sms-call-internet-mi-2013-11-21.txt: 1,439,974 (time, cell) records
+2026-11-16 17:42:57 | INFO |   [22/62] sms-call-internet-mi-2013-11-22.txt: 1,439,974 (time, cell) records
+2026-11-16 17:43:03 | INFO |   [23/62] sms-call-internet-mi-2013-11-23.txt: 1,439,872 (time, cell) records
+2026-11-16 17:43:09 | INFO |   [24/62] sms-call-internet-mi-2013-11-24.txt: 1,439,830 (time, cell) records
+2026-11-16 17:43:16 | INFO |   [25/62] sms-call-internet-mi-2013-11-25.txt: 1,439,817 (time, cell) records
+2026-11-16 17:43:23 | INFO |   [26/62] sms-call-internet-mi-2013-11-26.txt: 1,439,610 (time, cell) records
+2026-11-16 17:43:29 | INFO |   [27/62] sms-call-internet-mi-2013-11-27.txt: 1,439,817 (time, cell) records
+2026-11-16 17:43:36 | INFO |   [28/62] sms-call-internet-mi-2013-11-28.txt: 1,439,739 (time, cell) records
+2026-11-16 17:43:43 | INFO |   [29/62] sms-call-internet-mi-2013-11-29.txt: 1,439,550 (time, cell) records
+2026-11-16 17:43:48 | INFO |   [30/62] sms-call-internet-mi-2013-11-30.txt: 1,439,540 (time, cell) records
+2026-11-16 17:43:54 | INFO |   [31/62] sms-call-internet-mi-2013-12-01.txt: 1,439,342 (time, cell) records
+2026-11-16 17:44:01 | INFO |   [32/62] sms-call-internet-mi-2013-12-02.txt: 1,439,537 (time, cell) records
+2026-11-16 17:44:07 | INFO |   [33/62] sms-call-internet-mi-2013-12-03.txt: 1,439,327 (time, cell) records
+2026-11-16 17:44:14 | INFO |   [34/62] sms-call-internet-mi-2013-12-04.txt: 1,439,408 (time, cell) records
+2026-11-16 17:44:21 | INFO |   [35/62] sms-call-internet-mi-2013-12-05.txt: 1,439,287 (time, cell) records
+2026-11-16 17:44:27 | INFO |   [36/62] sms-call-internet-mi-2013-12-06.txt: 1,439,286 (time, cell) records
+2026-11-16 17:44:33 | INFO |   [37/62] sms-call-internet-mi-2013-12-07.txt: 1,439,203 (time, cell) records
+2026-11-16 17:44:39 | INFO |   [38/62] sms-call-internet-mi-2013-12-08.txt: 1,439,000 (time, cell) records
+2026-11-16 17:44:45 | INFO |   [39/62] sms-call-internet-mi-2013-12-09.txt: 1,439,293 (time, cell) records
+2026-11-16 17:44:52 | INFO |   [40/62] sms-call-internet-mi-2013-12-10.txt: 1,439,162 (time, cell) records
+2026-11-16 17:44:59 | INFO |   [41/62] sms-call-internet-mi-2013-12-11.txt: 1,439,235 (time, cell) records
+2026-11-16 17:45:06 | INFO |   [42/62] sms-call-internet-mi-2013-12-12.txt: 1,439,252 (time, cell) records
+2026-11-16 17:45:12 | INFO |   [43/62] sms-call-internet-mi-2013-12-13.txt: 1,439,293 (time, cell) records
+2026-11-16 17:45:18 | INFO |   [44/62] sms-call-internet-mi-2013-12-14.txt: 1,439,212 (time, cell) records
+2026-11-16 17:45:24 | INFO |   [45/62] sms-call-internet-mi-2013-12-15.txt: 1,438,921 (time, cell) records
+2026-11-16 17:45:30 | INFO |   [46/62] sms-call-internet-mi-2013-12-16.txt: 1,439,258 (time, cell) records
+2026-11-16 17:45:37 | INFO |   [47/62] sms-call-internet-mi-2013-12-17.txt: 1,439,276 (time, cell) records
+2026-11-16 17:45:44 | INFO |   [48/62] sms-call-internet-mi-2013-12-18.txt: 1,439,259 (time, cell) records
+2026-11-16 17:45:51 | INFO |   [49/62] sms-call-internet-mi-2013-12-19.txt: 1,439,277 (time, cell) records
+2026-11-16 17:45:57 | INFO |   [50/62] sms-call-internet-mi-2013-12-20.txt: 1,439,174 (time, cell) records
+2026-11-16 17:46:03 | INFO |   [51/62] sms-call-internet-mi-2013-12-21.txt: 1,439,078 (time, cell) records
+2026-11-16 17:46:09 | INFO |   [52/62] sms-call-internet-mi-2013-12-22.txt: 1,438,633 (time, cell) records
+2026-11-16 17:46:15 | INFO |   [53/62] sms-call-internet-mi-2013-12-23.txt: 1,439,058 (time, cell) records
+2026-11-16 17:46:22 | INFO |   [54/62] sms-call-internet-mi-2013-12-24.txt: 1,438,931 (time, cell) records
+2026-11-16 17:46:28 | INFO |   [55/62] sms-call-internet-mi-2013-12-25.txt: 1,438,118 (time, cell) records
+2026-11-16 17:46:33 | INFO |   [56/62] sms-call-internet-mi-2013-12-26.txt: 1,437,733 (time, cell) records
+2026-11-16 17:46:39 | INFO |   [57/62] sms-call-internet-mi-2013-12-27.txt: 1,438,605 (time, cell) records
+2026-11-16 17:46:45 | INFO |   [58/62] sms-call-internet-mi-2013-12-28.txt: 1,438,737 (time, cell) records
+2026-11-16 17:46:50 | INFO |   [59/62] sms-call-internet-mi-2013-12-29.txt: 1,438,004 (time, cell) records
+2026-11-16 17:46:56 | INFO |   [60/62] sms-call-internet-mi-2013-12-30.txt: 1,438,743 (time, cell) records
+2026-11-16 17:47:02 | INFO |   [61/62] sms-call-internet-mi-2013-12-31.txt: 1,438,736 (time, cell) records
+2026-11-16 17:47:08 | INFO |   [62/62] sms-call-internet-mi-2014-01-01.txt: 1,438,701 (time, cell) records
+2026-11-16 17:47:09 | INFO | Done. Metadata written to /kaggle/temp/processed/meta.json
+tensor shape (T, C, H, W): [8928, 5, 100, 100] | features: ['smsin', 'smsout', 'callin', 'callout', 'internet']
+days: 2013-11-01 -> 2014-01-01 (62 days)

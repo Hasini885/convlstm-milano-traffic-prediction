@@ -10,9 +10,8 @@ data:
   num_workers: 2
   scaler: standard                  # mean/std scaling instead of min-max (losses near 1, not 1e-6)
   time_features: true               # sin/cos time-of-day and day-of-week input channels
-  log_transform: true               # log1p before scaling: errors become relative, so busy November and
-                                    # quieter December are on one footing (persistence train/val loss
-                                    # ratio 1.53 -> 1.09 on real data)
+  log_transform: true               # log1p before scaling: the loss weights relative errors
+                                    # (run 3: MAE -3.2%, MAPE -11.7% vs run 1, RMSE unchanged)
 
 training:
   batch_size: 16

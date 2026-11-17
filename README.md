@@ -5,6 +5,10 @@ internet) on the 100×100 Milano grid with a spatio-temporal **ConvLSTM**. It co
 preprocessing, the model, training with early stopping, evaluation against naive baselines, and
 visualisation.
 
+**Best result (run 3, test period 23 Dec 2013 – 1 Jan 2014, 10 minutes ahead, full 100×100
+grid):** RMSE 8.47, MAE 3.78, MAPE 10.59%. That is 9.8% lower RMSE and 12.8% lower MAE than
+persistence, and 11.7% lower MAPE than the first run. Details in §13.
+
 ---
 
 ## Table of contents
@@ -40,7 +44,7 @@ visualisation.
 | Evaluation and plots (`src/evaluate.py`) | Done; metrics per horizon and channel, 4 baselines, skill scores, 3 plots |
 | **Real Milano data, run 1** | **Done.** Full run on Kaggle (Tesla T4): 62 days, full 100×100 grid. Results in §13 and `outputs/kaggle/`. |
 | **Real Milano data, run 2** (standard scaling + calendar inputs) | **Done.** Beats all four baselines (RMSE 8.4% below persistence) but is 1.5% behind run 1 on RMSE. Results in §13 and `outputs/kaggle_run2/`. |
-| **Real Milano data, run 3** (run 2 + `log_transform`) | **In progress** on Kaggle. |
+| **Real Milano data, run 3** (run 2 + `log_transform`) | **Done, best model.** RMSE 8.47 (equal to run 1), MAE 3.78 (−3.2%), MAPE 10.59% (−11.7%); beats persistence by 9.8% RMSE / 12.8% MAE. Train and validation losses overlap relative to persistence. Results in §13 and `outputs/kaggle_run3/`. |
 
 ### What changed in v2 (drawbacks of run 1 and their fixes)
 
@@ -56,8 +60,7 @@ visualisation.
 | 8 | **Unreadable time-series plot.** Ten days of 10-minute data in one panel formed a solid band. | `evaluation.plot_steps` (default 432 = last 3 days); the prediction is drawn on top. |
 | 9 | **Download script could not work.** Harvard Dataverse rejects every scripted download ("required Guestbook response"). | Replaced by `scripts/download_kaggle.py` (Kaggle mirror, identical files). Unused `scikit-learn` removed from `requirements.txt`. |
 | 10 | **Grid orientation unverified.** | Checked against `milano-grid.geojson`: CellID 1 is the south-west corner, 2 is east of it and 101 is north of it, exactly as `cell_id_to_rowcol` assumes. |
-
-| 11 | **Large gap between training and validation loss.** Validation was *below* training, so this is not overfitting (regularisation would not help): MSE on absolute values weights the busier November training period more than the quieter December validation period. Even persistence, with no model at all, scores 1.53× more loss on training than on validation. | `data.log_transform: true` (with standard scaling applied after `log1p`) makes errors relative. The persistence train/val ratio drops to 1.09, and in a short real-data test the model's train and val losses became nearly equal (0.037 vs 0.035, instead of 0.41 vs 0.22). Huber loss was also tested and did not change the ratio. |
+| 11 | **Large gap between training and validation loss.** Validation was *below* training, so this is not overfitting (regularisation would not help). The validation period is simply easier: on the full data, persistence alone, with no model, scores 1.64× more loss on training than on validation. | The gap is a property of the data, so no parameter removes it from the *raw* losses (`log_transform` narrowed it on a 3-day sample but not on the full data; Huber loss did not change it). What matters is the comparison against the same split's persistence loss: in run 3 the model reaches **0.69× persistence on training and 0.70× on validation**, so the two curves overlap (`outputs/kaggle_run3/loss_curve.png`) and there is no generalisation gap. `log_transform` was kept because it improved the test MAE and MAPE (§13). |
 
 All new options default to the run-1 behaviour in `configs/default.yaml`, so old commands and the
 run-1 checkpoint keep working (the checkpoint was re-evaluated with the new code). The Kaggle
@@ -91,7 +94,8 @@ convlstm_milano/
 │   └── processed/                # tensor.npy + meta.json for the real data
 └── outputs/
     ├── kaggle/                   # run 1: checkpoint, logs, metrics and plots
-    └── kaggle_run2/              # run 2: logs, plots, config used, metrics summary
+    ├── kaggle_run2/              # run 2: logs, plots, config used, metrics summary
+    └── kaggle_run3/              # run 3 (best): logs, plots, config used, metrics summary
 ```
 
 Code size: about 1,690 lines (`dataset.py` 555, `evaluate.py` 345, `train.py` 269,
@@ -643,11 +647,56 @@ Observations:
 - `cell_timeseries.png` now shows the last 3 days, where the ConvLSTM visibly smooths the
   spikes that persistence copies one step late.
 
-### Run 3: + `log_transform` (in progress)
+### Run 3: + `log_transform` (best model, `outputs/kaggle_run3/`)
 
-Run 2's settings plus `log_transform: true`, to close the train/validation gap (§1, drawback 11),
-and the persistence-relative loss curve. This is the current `configs/kaggle.yaml` and notebook;
-it was started on Kaggle on 2026-11-16. Results will be added here when it finishes.
+Run 2's settings plus `log_transform: true` (`log1p`, then standard scaling), with the
+persistence-relative loss curve. This is the current `configs/kaggle.yaml` and
+`kaggle/convlstm_milano_kaggle.ipynb` (saved with its outputs). Kaggle Tesla T4, 2026-11-16.
+
+| Item | Value |
+|---|---|
+| Training | about 156 s per epoch; early stopping after epoch 41 (best: epoch 35); about 1 h 47 min |
+| Learning rate | reduced to 5e-4 at epoch 24 and 2.5e-4 at epoch 31 |
+| Persistence loss (reference) | train 2.16e-2, val 1.32e-2 (log-standardised scale) |
+| Best validation loss | 9.23e-3 = **0.700× persistence** (training at the same epoch: 0.688×) |
+
+Test-set results, in original units:
+
+| Model | RMSE | MAE | MAPE % |
+|---|---|---|---|
+| **ConvLSTM (run 3)** | **8.4722** | **3.7802** | **10.59** |
+| ConvLSTM (run 1) | 8.4745 | 3.9071 | 11.99 |
+| ConvLSTM (run 2) | 8.6032 | 3.9130 | 12.32 |
+| Persistence (last frame) | 9.3922 | 4.3344 | 12.56 |
+| Window mean (last hour) | 10.3727 | 4.4394 | 12.13 |
+| Same time yesterday | 27.4455 | 9.2972 | 24.78 |
+| Same time last week | 57.0111 | 17.4023 | 40.56 |
+
+Change against run 1: RMSE −0.03% (equal), **MAE −3.2%**, **MAPE −11.7%**.
+
+Skill of the run-3 ConvLSTM (share of each baseline's error removed):
+
+| Baseline | RMSE | MAE |
+|---|---|---|
+| Persistence | 9.8% | 12.8% |
+| Window mean | 18.3% | 14.9% |
+| Same time yesterday | 69.1% | 59.3% |
+| Same time last week | 85.1% | 78.3% |
+
+Observations:
+
+- **Run 3 is the best model.** It matches run 1 on RMSE and is clearly better on MAE and MAPE.
+  This is the expected effect of training in log space: the loss weights *relative* errors, so
+  the many medium- and low-traffic cells are predicted better, while RMSE, which is dominated by
+  the few busiest cells, stays the same.
+- **The loss curve is healthy** (`loss_curve.png`): relative to persistence on the same split,
+  training (0.69×) and validation (0.70×) overlap and both stay well below 1.0 from epoch 2 on.
+  The raw losses still differ (validation lower) only because the December validation period is
+  easier for every forecaster, persistence included.
+- **Errors are concentrated in the dense city centre** (`heatmaps.png`), where traffic and hence
+  absolute errors are largest; the predicted maps reproduce the spatial structure closely.
+- Compared with run 2, adding `log_transform` alone moved MAE from 3.91 to 3.78 and MAPE from
+  12.32% to 10.59%, so that is the change responsible for the improvement over run 1.
 
 ---
 
@@ -776,15 +825,15 @@ Preprocessing writes `tensor.npy` and `meta.json` to `paths.processed_dir`.
 
 ## 18. Known limitations and next steps
 
-- **The v2 changes have not improved test accuracy yet.** Run 2 (standard scaling + calendar
-  inputs) is 1.5% worse than run 1 on RMSE, although it still beats all baselines; run 3
-  (+ `log_transform`) is pending (§13). Each run changes several settings at once, so separate
-  runs would be needed to credit each change individually.
+- **The improvement over run 1 is in MAE and MAPE, not RMSE.** Run 3 matches run 1 on RMSE
+  (8.47) and improves MAE by 3.2% and MAPE by 11.7%. Run 2 vs run 3 isolates `log_transform`;
+  the separate effects of standard scaling and the calendar inputs (introduced together in run 2)
+  have not been tested one at a time. Each result is from a single training run (seed 42), so
+  differences of about 1% may be within run-to-run variation.
 - **Only internet, 1 step ahead, has been run on real data.** Next experiments:
   - all five features as input
   - `t_out: 3` or `6` for 30–60 minutes ahead
-  - the effect of `log_transform` (run 3). Training in log space optimises relative error, so
-    RMSE on the busiest cells could get worse even as MAE and MAPE improve.
+  - repeated runs with different seeds, to put error bars on the comparison
   - longer horizons (`t_out` 6 or more), where calendar inputs should matter more than at
     10 minutes ahead
 - **The test period is the Christmas/New Year fortnight**, which is atypical traffic; a different

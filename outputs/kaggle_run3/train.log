@@ -1,0 +1,48 @@
+$ python -m src.train --config configs/kaggle.yaml --resume --set paths.raw_dir=/kaggle/input/datasets/dkgmgo/telecom-italia-milan/data data.interval_minutes=10
+2026-11-16 17:47:18 | INFO | Device: cuda | windows train/val/test = 6243/1333/1334
+2026-11-16 17:47:18 | INFO | Loss mask: 10000/10000 cells active in the training period
+2026-11-16 17:47:18 | INFO | Model: 473,506 parameters
+2026-11-16 17:47:31 | INFO | Reference: persistence scores a train loss of 2.1577e-02 and a val loss of 1.3183e-02
+2026-11-16 17:50:09 | INFO | Epoch   1 | train 3.9090e-02 | val 1.1850e-02 (0.899x persistence) | lr 1.00e-03 | 158.2s  * saved best
+2026-11-16 17:52:45 | INFO | Epoch   2 | train 1.7547e-02 | val 1.0960e-02 (0.831x persistence) | lr 1.00e-03 | 155.8s  * saved best
+2026-11-16 17:55:19 | INFO | Epoch   3 | train 1.7113e-02 | val 1.0832e-02 (0.822x persistence) | lr 1.00e-03 | 153.9s  * saved best
+2026-11-16 17:57:53 | INFO | Epoch   4 | train 1.6511e-02 | val 1.0573e-02 (0.802x persistence) | lr 1.00e-03 | 154.1s  * saved best
+2026-11-16 18:00:27 | INFO | Epoch   5 | train 1.6243e-02 | val 1.0258e-02 (0.778x persistence) | lr 1.00e-03 | 153.9s  * saved best
+2026-11-16 18:03:01 | INFO | Epoch   6 | train 1.5976e-02 | val 1.0487e-02 (0.795x persistence) | lr 1.00e-03 | 154.2s
+2026-11-16 18:05:36 | INFO | Epoch   7 | train 1.5910e-02 | val 9.7663e-03 (0.741x persistence) | lr 1.00e-03 | 154.6s  * saved best
+2026-11-16 18:08:11 | INFO | Epoch   8 | train 1.5793e-02 | val 1.0043e-02 (0.762x persistence) | lr 1.00e-03 | 155.1s
+2026-11-16 18:10:47 | INFO | Epoch   9 | train 1.5689e-02 | val 9.7036e-03 (0.736x persistence) | lr 1.00e-03 | 155.6s  * saved best
+2026-11-16 18:13:22 | INFO | Epoch  10 | train 1.5606e-02 | val 1.0420e-02 (0.790x persistence) | lr 1.00e-03 | 155.5s
+2026-11-16 18:15:58 | INFO | Epoch  11 | train 1.5682e-02 | val 1.0228e-02 (0.776x persistence) | lr 1.00e-03 | 156.1s
+2026-11-16 18:18:34 | INFO | Epoch  12 | train 1.5532e-02 | val 9.5782e-03 (0.727x persistence) | lr 1.00e-03 | 156.1s  * saved best
+2026-11-16 18:21:10 | INFO | Epoch  13 | train 1.5467e-02 | val 9.9065e-03 (0.751x persistence) | lr 1.00e-03 | 156.0s
+2026-11-16 18:23:47 | INFO | Epoch  14 | train 1.5497e-02 | val 9.7409e-03 (0.739x persistence) | lr 1.00e-03 | 156.1s
+2026-11-16 18:26:22 | INFO | Epoch  15 | train 1.5432e-02 | val 9.4546e-03 (0.717x persistence) | lr 1.00e-03 | 155.8s  * saved best
+2026-11-16 18:28:58 | INFO | Epoch  16 | train 1.5418e-02 | val 9.7619e-03 (0.740x persistence) | lr 1.00e-03 | 155.5s
+2026-11-16 18:31:34 | INFO | Epoch  17 | train 1.5340e-02 | val 9.4309e-03 (0.715x persistence) | lr 1.00e-03 | 156.1s  * saved best
+2026-11-16 18:34:10 | INFO | Epoch  18 | train 1.5339e-02 | val 9.4635e-03 (0.718x persistence) | lr 1.00e-03 | 156.3s
+2026-11-16 18:36:47 | INFO | Epoch  19 | train 1.5298e-02 | val 9.4964e-03 (0.720x persistence) | lr 1.00e-03 | 156.3s
+2026-11-16 18:39:23 | INFO | Epoch  20 | train 1.5257e-02 | val 9.5622e-03 (0.725x persistence) | lr 1.00e-03 | 156.3s
+2026-11-16 18:41:59 | INFO | Epoch  21 | train 1.5258e-02 | val 1.0114e-02 (0.767x persistence) | lr 1.00e-03 | 156.4s
+2026-11-16 18:44:36 | INFO | Epoch  22 | train 1.5234e-02 | val 9.8015e-03 (0.743x persistence) | lr 1.00e-03 | 156.3s
+2026-11-16 18:47:12 | INFO | Epoch  23 | train 1.5216e-02 | val 9.5367e-03 (0.723x persistence) | lr 1.00e-03 | 156.3s
+2026-11-16 18:49:48 | INFO | Epoch  24 | train 1.5036e-02 | val 9.2794e-03 (0.704x persistence) | lr 5.00e-04 | 156.0s  * saved best
+2026-11-16 18:52:24 | INFO | Epoch  25 | train 1.5030e-02 | val 9.3389e-03 (0.708x persistence) | lr 5.00e-04 | 156.1s
+2026-11-16 18:55:00 | INFO | Epoch  26 | train 1.5024e-02 | val 9.3812e-03 (0.712x persistence) | lr 5.00e-04 | 156.3s
+2026-11-16 18:57:37 | INFO | Epoch  27 | train 1.5021e-02 | val 9.3611e-03 (0.710x persistence) | lr 5.00e-04 | 156.4s
+2026-11-16 19:00:13 | INFO | Epoch  28 | train 1.5014e-02 | val 9.5601e-03 (0.725x persistence) | lr 5.00e-04 | 155.9s
+2026-11-16 19:02:48 | INFO | Epoch  29 | train 1.4998e-02 | val 9.5004e-03 (0.721x persistence) | lr 5.00e-04 | 155.9s
+2026-11-16 19:05:24 | INFO | Epoch  30 | train 1.4983e-02 | val 9.4562e-03 (0.717x persistence) | lr 5.00e-04 | 156.0s
+2026-11-16 19:08:00 | INFO | Epoch  31 | train 1.4880e-02 | val 9.2349e-03 (0.701x persistence) | lr 2.50e-04 | 155.9s  * saved best
+2026-11-16 19:10:37 | INFO | Epoch  32 | train 1.4870e-02 | val 9.3093e-03 (0.706x persistence) | lr 2.50e-04 | 156.1s
+2026-11-16 19:13:13 | INFO | Epoch  33 | train 1.4869e-02 | val 9.3962e-03 (0.713x persistence) | lr 2.50e-04 | 156.7s
+2026-11-16 19:15:50 | INFO | Epoch  34 | train 1.4864e-02 | val 9.2527e-03 (0.702x persistence) | lr 2.50e-04 | 156.8s
+2026-11-16 19:18:27 | INFO | Epoch  35 | train 1.4853e-02 | val 9.2335e-03 (0.700x persistence) | lr 2.50e-04 | 156.9s  * saved best
+2026-11-16 19:21:04 | INFO | Epoch  36 | train 1.4840e-02 | val 9.3435e-03 (0.709x persistence) | lr 2.50e-04 | 156.7s
+2026-11-16 19:23:41 | INFO | Epoch  37 | train 1.4822e-02 | val 9.2462e-03 (0.701x persistence) | lr 2.50e-04 | 156.9s
+2026-11-16 19:26:18 | INFO | Epoch  38 | train 1.4817e-02 | val 9.2872e-03 (0.704x persistence) | lr 2.50e-04 | 157.1s
+2026-11-16 19:28:55 | INFO | Epoch  39 | train 1.4802e-02 | val 9.2716e-03 (0.703x persistence) | lr 2.50e-04 | 157.0s
+2026-11-16 19:31:31 | INFO | Epoch  40 | train 1.4806e-02 | val 9.3771e-03 (0.711x persistence) | lr 2.50e-04 | 156.5s
+2026-11-16 19:34:08 | INFO | Epoch  41 | train 1.4805e-02 | val 9.4062e-03 (0.714x persistence) | lr 2.50e-04 | 156.5s
+2026-11-16 19:34:08 | INFO | Early stopping: no noticeable val improvement for 10 epochs
+2026-11-16 19:34:08 | INFO | Best val loss 9.2335e-03 (0.700x persistence); checkpoint: /kaggle/working/outputs/convlstm_internet_v2/best_model.pt
