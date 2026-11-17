@@ -1,0 +1,18 @@
+$ python -m src.evaluate --config configs/kaggle.yaml --set paths.raw_dir=/kaggle/input/datasets/dkgmgo/telecom-italia-milan/data data.interval_minutes=10
+2026-11-16 20:17:02 | INFO | Loaded /kaggle/working/outputs/convlstm_internet_v2/best_model.pt (epoch 26, val loss 6.5894e-03); 1334 test windows on cuda
+2026-11-16 20:17:30 | INFO | model          horizon         RMSE          MAE    MAPE %
+2026-11-16 20:17:30 | INFO | ConvLSTM             1       8.6032       3.9130     12.32
+2026-11-16 20:17:30 | INFO | Persistence          1       9.3922       4.3344     12.56
+2026-11-16 20:17:30 | INFO | WindowMean           1      10.3727       4.4394     12.13
+2026-11-16 20:17:30 | INFO | SeasonalDaily        1      27.4455       9.2972     24.78
+2026-11-16 20:17:30 | INFO | SeasonalWeekly       1      57.0111      17.4023     40.56
+2026-11-16 20:17:30 | INFO | ConvLSTM       overall  RMSE 8.6032 | MAE 3.9130 | MAPE 12.32%
+2026-11-16 20:17:30 | INFO | Persistence    overall  RMSE 9.3922 | MAE 4.3344 | MAPE 12.56%
+2026-11-16 20:17:30 | INFO | WindowMean     overall  RMSE 10.3727 | MAE 4.4394 | MAPE 12.13%
+2026-11-16 20:17:30 | INFO | SeasonalDaily  overall  RMSE 27.4455 | MAE 9.2972 | MAPE 24.78%
+2026-11-16 20:17:30 | INFO | SeasonalWeekly overall  RMSE 57.0111 | MAE 17.4023 | MAPE 40.56%
+2026-11-16 20:17:30 | INFO | ConvLSTM vs Persistence    RMSE -8.4% | MAE -9.7%
+2026-11-16 20:17:30 | INFO | ConvLSTM vs WindowMean     RMSE -17.1% | MAE -11.9%
+2026-11-16 20:17:30 | INFO | ConvLSTM vs SeasonalDaily  RMSE -68.7% | MAE -57.9%
+2026-11-16 20:17:30 | INFO | ConvLSTM vs SeasonalWeekly RMSE -84.9% | MAE -77.5%
+2026-11-16 20:17:32 | INFO | Metrics and plots written to /kaggle/working/outputs/convlstm_internet_v2

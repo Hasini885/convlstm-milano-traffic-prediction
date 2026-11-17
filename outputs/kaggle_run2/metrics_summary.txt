@@ -1,0 +1,23 @@
+                   RMSE      MAE   MAPE_%
+model                                    
+ConvLSTM         8.6032   3.9130  12.3185
+Persistence      9.3922   4.3344  12.5619
+WindowMean      10.3727   4.4394  12.1277
+SeasonalDaily   27.4455   9.2972  24.7829
+SeasonalWeekly  57.0111  17.4023  40.5579
+ConvLSTM skill vs each baseline (% of the baseline's error removed; positive = better):
+
+                 RMSE    MAE
+Persistence      8.40   9.72
+WindowMean      17.06  11.86
+SeasonalDaily   68.65  57.91
+SeasonalWeekly  84.91  77.51
+{
+  "units": "original dataset units (unitless activity counts)",
+  "mask_inactive": true,
+  "active_cells": 10000,
+  "mape_threshold": 1.0,
+  "test_windows": 1334,
+  "checkpoint": "/kaggle/working/outputs/convlstm_internet_v2/best_model.pt"
+}
+

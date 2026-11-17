@@ -39,7 +39,8 @@ visualisation.
 | Training (`src/train.py`) | Done; runs on GPU (CUDA) or CPU |
 | Evaluation and plots (`src/evaluate.py`) | Done; metrics per horizon and channel, 4 baselines, skill scores, 3 plots |
 | **Real Milano data, run 1** | **Done.** Full run on Kaggle (Tesla T4): 62 days, full 100×100 grid. Results in §13 and `outputs/kaggle/`. |
-| **Real Milano data, run 2 (v2 settings)** | **In progress.** The first attempt was stopped after epoch 18 (best validation loss 0.80× persistence); test results pending. See §13. |
+| **Real Milano data, run 2** (standard scaling + calendar inputs) | **Done.** Beats all four baselines (RMSE 8.4% below persistence) but is 1.5% behind run 1 on RMSE. Results in §13 and `outputs/kaggle_run2/`. |
+| **Real Milano data, run 3** (run 2 + `log_transform`) | **In progress** on Kaggle. |
 
 ### What changed in v2 (drawbacks of run 1 and their fixes)
 
@@ -89,7 +90,8 @@ convlstm_milano/
 │   ├── raw/                      # put the real daily files here
 │   └── processed/                # tensor.npy + meta.json for the real data
 └── outputs/
-    └── kaggle/                   # checkpoint, logs, metrics and plots from the real-data run
+    ├── kaggle/                   # run 1: checkpoint, logs, metrics and plots
+    └── kaggle_run2/              # run 2: logs, plots, config used, metrics summary
 ```
 
 Code size: about 1,690 lines (`dataset.py` 555, `evaluate.py` 345, `train.py` 269,
@@ -592,25 +594,60 @@ Observations:
 - Run 1 was compared only with persistence and the window mean; the seasonal baselines were
   added in v2.
 
-### Run 2: v2 settings (in progress)
+### Run 2: standard scaling + calendar inputs (`outputs/kaggle_run2/`)
 
 Same data, split, task and model size as run 1 (473,506 parameters: the 4 calendar channels add
-9,216), with `scaler: standard`, `log_transform: true`, `time_features: true` and
-`min_delta_rel: 0.001`. Notebook: `kaggle/convlstm_milano_kaggle.ipynb`.
-
-The first attempt (2026-11-16, Tesla T4, **without** `log_transform`) was stopped after **18 epochs**, before evaluation, so
-there are **no test results yet**. The interim validation figures:
+9,216), with `scaler: standard`, `time_features: true` and `min_delta_rel: 0.001`
+(`log_transform` off; exact settings in `outputs/kaggle_run2/kaggle_config_used.yaml`).
+Kaggle Tesla T4, 2026-11-16.
 
 | Item | Value |
 |---|---|
-| Preprocessing | about 6.5 minutes, same tensor as run 1 |
-| Time per epoch | about 157 s |
-| Training loss | 2.08e-2 at epoch 18 (run 1: about 6e-6) |
-| Best validation loss | 6.61e-3 at epoch 16 = **0.804× the persistence loss** (about 20% less squared error than "no change") |
-| Learning rate | still 1e-3 (not yet reduced by the scheduler) |
+| Training | about 162 s per epoch; early stopping after epoch 35 (best: epoch 26); about 1 h 35 min, versus 51 epochs and 2 h 5 min in run 1 |
+| Learning rate | reduced to 5e-4 at epoch 23 and 2.5e-4 at epoch 33 |
+| Best validation loss | 6.59e-3 = **0.801× the persistence loss** on the validation set |
 
-The test-set table (ConvLSTM against all four baselines, and against run 1) will be added when a
-complete run finishes.
+Test-set results, in original units:
+
+| Model | RMSE | MAE | MAPE % |
+|---|---|---|---|
+| **ConvLSTM (run 2)** | **8.6032** | **3.9130** | 12.32 |
+| Persistence (last frame) | 9.3922 | 4.3344 | 12.56 |
+| Window mean (last hour) | 10.3727 | 4.4394 | 12.13 |
+| Same time yesterday | 27.4455 | 9.2972 | 24.78 |
+| Same time last week | 57.0111 | 17.4023 | 40.56 |
+| *ConvLSTM (run 1), for comparison* | *8.4745* | *3.9071* | *11.99* |
+
+Skill of the run-2 ConvLSTM (share of each baseline's error removed):
+
+| Baseline | RMSE | MAE |
+|---|---|---|
+| Persistence | 8.4% | 9.7% |
+| Window mean | 17.1% | 11.9% |
+| Same time yesterday | 68.7% | 57.9% |
+| Same time last week | 84.9% | 77.5% |
+
+Observations:
+
+- **Run 2 beats every baseline but does not beat run 1** (RMSE +1.5%, MAE +0.2%, MAPE +2.7%).
+  Standard scaling and the calendar inputs made training better behaved (losses around 1e-2
+  instead of 1e-6, the scheduler now reduces the learning rate, and early stopping ends 16 epochs
+  sooner), but they did not improve test accuracy. For 10-minute-ahead forecasting the last hour
+  of traffic already carries almost all the information; the time of day adds little.
+- **The seasonal baselines are far worse than persistence.** At a 10-minute resolution traffic
+  is noisy, and the test period (Christmas to New Year) differs strongly from the days and weeks
+  before it, so "same time yesterday / last week" is a poor forecast here.
+- **Validation is still below training** (`loss_curve.png`, raw losses). This run predates the
+  persistence-relative plot; the explanation is the different traffic level of the two periods
+  (§1, drawback 11).
+- `cell_timeseries.png` now shows the last 3 days, where the ConvLSTM visibly smooths the
+  spikes that persistence copies one step late.
+
+### Run 3: + `log_transform` (in progress)
+
+Run 2's settings plus `log_transform: true`, to close the train/validation gap (§1, drawback 11),
+and the persistence-relative loss curve. This is the current `configs/kaggle.yaml` and notebook;
+it was started on Kaggle on 2026-11-16. Results will be added here when it finishes.
 
 ---
 
@@ -739,15 +776,17 @@ Preprocessing writes `tensor.npy` and `meta.json` to `paths.processed_dir`.
 
 ## 18. Known limitations and next steps
 
-- **Run 2 (v2 settings) has not finished yet**, so the v2 improvements are only supported by
-  validation figures so far (§13). Run 1 and run 2 change several things at once; separate runs
-  would be needed to credit each change individually.
+- **The v2 changes have not improved test accuracy yet.** Run 2 (standard scaling + calendar
+  inputs) is 1.5% worse than run 1 on RMSE, although it still beats all baselines; run 3
+  (+ `log_transform`) is pending (§13). Each run changes several settings at once, so separate
+  runs would be needed to credit each change individually.
 - **Only internet, 1 step ahead, has been run on real data.** Next experiments:
   - all five features as input
   - `t_out: 3` or `6` for 30–60 minutes ahead
-  - the effect of `log_transform` alone (run 2 changes several settings at once). Training in
-    log space optimises relative error, so RMSE on the busiest cells could get worse even as MAE
-    and MAPE improve; the run-2 test table will show which way it goes.
+  - the effect of `log_transform` (run 3). Training in log space optimises relative error, so
+    RMSE on the busiest cells could get worse even as MAE and MAPE improve.
+  - longer horizons (`t_out` 6 or more), where calendar inputs should matter more than at
+    10 minutes ahead
 - **The test period is the Christmas/New Year fortnight**, which is atypical traffic; a different
   split (or several) would show how well results generalise.
 - **No GPU on the development machine.** Full-grid training is done on Kaggle (§3).
