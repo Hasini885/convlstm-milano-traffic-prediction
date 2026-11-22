@@ -14,51 +14,52 @@
 \title{Spatio-Temporal ConvLSTM for Cellular Traffic Forecasting: A Deep Learning Benchmark on the Telecom Italia Milan Dataset}
 
 
+
 \author{
+\begin{tabular}{ccc}
+
+\parbox[t]{0.31\textwidth}{\centering
+\textbf{Aarav Raj Shrestha}\\
+\textit{Department of Computer Science and Engineering}\\
+\textit{SRM University-AP}\\
+Amaravati, India\\
+aaravraj\_shrestha@srmap.edu.in
+}
+&
+\parbox[t]{0.31\textwidth}{\centering
+\textbf{Hasini Sai Maram}\\
+\textit{Department of Computer Science and Engineering}\\
+\textit{SRM University-AP}\\
+Amaravati, India\\
+hasinisai\_maram@srmap.edu.in
+}
+&
+\parbox[t]{0.31\textwidth}{\centering
+\textbf{Anjali Desai}\\
+\textit{Department of Computer Science and Engineering}\\
+\textit{SRM University-AP}\\
+Amaravati, India\\
+anjali\_desai@srmap.edu.in
+}
+
+\\[2.65cm]
+
+\multicolumn{3}{c}{
 \begin{tabular}{cc}
-
-\begin{tabular}{c}
-\IEEEauthorblockN{Aarav Raj Shrestha}
-\IEEEauthorblockA{
+\parbox[t]{0.38\textwidth}{\centering
+\textbf{Baibhav Baidya}\\
 \textit{Department of Computer Science and Engineering}\\
-AP23110011302
+\textit{SRM University-AP}\\
+Amaravati, India\\
+baibhav\_baidya@srmap.edu.in
 }
-\end{tabular}
 &
-\begin{tabular}{c}
-\IEEEauthorblockN{Maram Hasini Sai}
-\IEEEauthorblockA{
-\textit{Department of Computer Science and Engineering}\\
-AP23110010502
-}
-\end{tabular}
-\\[0.6cm]
-
-\begin{tabular}{c}
-\IEEEauthorblockN{Anjali Desai}
-\IEEEauthorblockA{
-\textit{Department of Computer Science and Engineering}\\
-AP23110010509
-}
-\end{tabular}
-&
-\begin{tabular}{c}
-\IEEEauthorblockN{Baibhav Baidya}
-\IEEEauthorblockA{
-\textit{Department of Computer Science and Engineering}\\
-AP23110010756
-}
-\end{tabular}
-
-\\[0.6cm]
-
-\multicolumn{2}{c}{
-\begin{tabular}{c}
-\IEEEauthorblockN{Ajay B}
-\IEEEauthorblockA{
+\parbox[t]{0.38\textwidth}{\centering
+\textbf{Ajay B}\\
 \textit{Faculty Guide}\\
 \textit{Department of Computer Science and Engineering}\\
-SRM University-AP\\
+\textit{SRM University-AP}\\
+Amaravati, India\\
 ajay.b@srmap.edu.in
 }
 \end{tabular}
@@ -69,8 +70,11 @@ ajay.b@srmap.edu.in
 
 \maketitle
 
+
+
+
 \begin{abstract}
-Anticipating short-term cellular traffic demand is vital for dynamic radio resource allocation, automated antenna tilting, proactive edge caching, and energy-aware base station sleep scheduling in next-generation 5G and 6G cellular networks. Cellular traffic exhibits complex spatial inter-dependencies across urban neighborhoods as well as non-linear temporal rhythms driven by human activity. In this paper, we formulate short-term cellular internet traffic forecasting across an entire metropolitan area as a spatio-temporal video prediction task. We design and evaluate a two-layer Convolutional Long Short-Term Memory (ConvLSTM) neural network equipped with cyclical calendar encodings and a multi-scale residual prediction head. The model is benchmarked on the full-scale Telecom Italia Big Data Challenge dataset for Milan, comprising 62 consecutive days of telecommunications activity across a $100 \times 100$ spatial grid (10,000 cells) at 10-minute temporal granularity. To prevent data leakage, we enforce a strict chronological 70/15/15 train-validation-test split, with scaling parameters computed exclusively on the training partition. Through iterative engineering across three complete training regimes, we demonstrate that coupling logarithmic variance stabilization with standardization achieves superior relative accuracy. Evaluated on an out-of-distribution holiday test set (Christmas to New Year), our proposed model achieves a Root Mean Square Error (RMSE) of 8.4722, Mean Absolute Error (MAE) of 3.7802, and Mean Absolute Percentage Error (MAPE) of 10.585\%, outperforming the strongest persistence baseline by 9.80\% in RMSE, 12.79\% in MAE, and 15.73\% in MAPE, while substantially outperforming historical window averaging and seasonal benchmarks.
+Anticipating short-term cellular traffic demand is vital for dynamic radio resource allocation, automated antenna tilting, proactive edge caching, and energy-aware base station sleep scheduling in next-generation 5G and 6G cellular networks, broadly speaking; and thus, cellular traffic is exhibiting complicated spatial inter-dependencies, across the urban neighborhoods as well as non-linear temporal rhythms driven by human activity, on the whole. We put together short-term cellular internet traffic forecasting, across an entire metropolitan subfield as a spatio-temporal video prediction task in this paper, and design and gauge a two-layer Convolutional Long Short-Term Memory (ConvLSTM) neural network prepared with cyclical calendar encodings and a multi-scale residual prediction head; the model is benchmarked on the full-scale Telecom Italia Big Data Challenge dataset for Milan, including 62 consecutive days of telecommunications activity, across a $100 \times 100$ spatial grid (10,000 cells) at 10-minute temporal granularity. Greatly outperforming historical window averaging and seasonal benchmarks. Found on an out-of-distribution holiday test set (Christmas to New Year), our suggested model hits a Root Mean Square Error (RMSE) of 8.4722, Mean Absolute Error (MAE) of 3.7802, and Mean Absolute Percentage Error (MAPE) of 10.585\%, outperforming the strongest persistence baseline by 9.80\% in RMSE, 12.79\% in MAE, and 15.73\% in MAPE. To prevent data leakage, we enforce a strict chronological 70/15/15 train-validation-test split, with scaling coefficients computed only on the training partition, and show that coupling logarithmic variance stabilization with standardization reaches superior relative exactness through the iterative engineering across the three complete training regimes.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -78,106 +82,106 @@ Cellular traffic forecasting, Spatio-temporal deep learning, Convolutional LSTM,
 \end{IEEEkeywords}
 
 \section{Introduction}
-Modern cellular communication systems operate under highly volatile spatial and temporal demand patterns. Rapid urbanization, the pervasive adoption of mobile streaming and smart devices, and localized congregation events (such as sporting events, concerts, or commuting transit surges) cause rapid fluctuations in traffic density across metropolitan cellular grids \cite{b1}. Conventional cellular management paradigms rely on reactive adjustments, in which network controllers trigger power allocation, beam-steering, or handover handshakes only after localized congestion or packet queuing has already degraded service quality. In contrast, proactive network resource management seeks to predict traffic volume minutes or hours ahead of time. Accurate short-term predictions enable proactive beamforming, dynamic bandwidth re-allocation, preemptive edge server caching, and green base-station sleep cycling, yielding substantial operational expenditure and energy savings \cite{b2}.
+Under highly unstable spatial and temporal demand patterns, modern cellular communication systems operate; standard cellular management paradigms depend on reactive adjustments, in which network controllers trigger power allocation, beam-steering, or handover handshakes only after localized congestion or packet queuing has already degraded service quality, in actual application. Moving on to that, proactive network resource management seeks to project traffic volume minutes or hours ahead of time, in many respects; indeed, exact short-term predictions are enabling proactive beamforming, dynamic bandwidth re-allocation, preemptive edge server caching, and green base-station sleep cycling, creating major operational spending and energy savings QLATEXz0001q. Rapid changes in traffic density across the metropolitan cellular grids are being caused QLATEXz0000q by rapid urbanization, the everywhere adoption of mobile streaming and smart devices, and localized congregation events (such as sporting events, concerts, or commuting transit surges).
 
-Cellular traffic displays dual characteristics:
+Cellular traffic displays dual attributes:
 \begin{enumerate}
-    \item \textbf{Spatial Correlation:} Telecommunication activity in a given cellular coverage area is strongly coupled to its geographical surroundings. Pedestrian and vehicular movement transfers demand across contiguous cells along arterial avenues and transit corridors.
-    \item \textbf{Temporal Dynamics:} Cellular traffic exhibits prominent daily (diurnal) cycles, weekly periodicities (workdays vs. weekends), and short-term autoregressive inertia.
+    \item \textbf{Spatial Correlation:} Telecommunication activity in a given cellular coverage area is strongly coupled to its geographical surroundings, in real-world scenarios; and thus, pedestrian and vehicular movement transfers are demanding, across the touching cells along arterial avenues and transit corridors, to a significant degree.
+    \item \textbf{Temporal Dynamics:} Cellular traffic is showing notable daily (diurnal) cycles, weekly periodicities (workdays vs. weekends), and short-term autoregressive inertia, in many respects.
 \end{enumerate}
 
-Traditional statistical time-series models, such as Auto-Regressive Integrated Moving Average (ARIMA) and Holt-Winters exponential smoothing, model temporal autoregression on isolated single-cell time series but discard spatial spatial correlations across neighboring cells \cite{b3}. Conversely, standard Feedforward Convolutional Neural Networks (CNNs) process 2D spatial feature maps effectively but lack recurrent memory mechanisms to capture time-dependent evolutions. Standard Recurrent Neural Networks (RNNs) and Long Short-Term Memory (LSTM) networks require spatial grids to be flattened into 1D vectors, thereby destroying 2D topological adjacencies and inducing parameter explosion.
+My point is, classic statistical time-series models, such as Auto-Regressive Integrated Moving Average (ARIMA) and Holt-Winters rapid smoothing, model temporal autoregression on separated single-cell time series but discard spatial spatial connections across the neighboring cells \cite{b3}, in actual application. Not like that, standard Feedforward Convolutional Neural Networks (CNNs) process 2D spatial trait maps basically but lack recurrent memory mechanisms to represent time-dependent evolutions, to a significant degree. Standard Recurrent Neural Networks (RNNs) and Long Short-Term Memory (LSTM) networks are needing spatial grids to be flattened into 1D vectors, thereby destroying 2D topological adjacencies and causing parameter explosion.
 
-To jointly model spatial topology and temporal evolution, Shi et al. \cite{b4} introduced the Convolutional LSTM (ConvLSTM) for precipitation nowcasting from radar imagery. By treating a metropolitan cellular network as a 2D image where pixel intensities represent aggregated traffic and stacking consecutive observations as a video sequence, cellular traffic forecasting can be formulated as a spatio-temporal video frame prediction problem \cite{b5}.
+To jointly model spatial topology and temporal evolution, Shi et al. \cite{b4} introduced the Convolutional LSTM (ConvLSTM) for precipitation nowcasting from radar imagery, to a significant degree. What's more, cellular traffic forecasting can be put together as a spatio-temporal video frame prediction problem \cite{b5} by treating a metropolitan cellular network as a 2D image where pixel intensities represent aggregated traffic and stacking consecutive findings as a video sequence, in real-world scenarios.
 
-In this paper, we develop, optimize, and rigorously benchmark an end-to-end Spatio-Temporal ConvLSTM architecture for 10-minute-ahead cellular internet traffic forecasting across the entire metropolitan area of Milan. Our core contributions are:
+Right here, we formulate, optimize, and exactly benchmark an end-to-end Spatio-Temporal ConvLSTM architecture for 10-minute-ahead cellular internet traffic forecasting across the entire metropolitan field of Milan. Our core contributions are:
 \begin{itemize}
-    \item \textbf{Full-Scale, Leakage-Free Pipeline:} We process the entire 62-day, 20.8\,GB Telecom Italia Big Data Challenge dataset (8,928 consecutive 10-minute intervals over 10,000 spatial cells), enforcing strict chronological splitting and train-only normalization to prevent temporal and spatial data leakage.
-    \item \textbf{Engineered Architecture:} We construct a deep recurrent network comprising two stacked ConvLSTM layers paired with sinusoidal cyclical calendar encodings and a residual convolutional refinement prediction head.
-    \item \textbf{Iterative Methodological Optimization:} We document the progression across three full-scale training regimes, demonstrating how transition from min-max normalization to standard scaling and finally logarithmic variance-stabilizing transformation ($\log(1+x)$) overcomes gradient vanishing and reduces Mean Absolute Percentage Error (MAPE) by 11.7\%.
-    \item \textbf{Comprehensive Benchmarking:} We benchmark our model against four baseline strategies—Persistence, Window Mean, Seasonal Daily, and Seasonal Weekly—demonstrating statistically significant improvements across an out-of-distribution holiday test window.
+    \item \textbf{Full-Scale, Leakage-Free Pipeline:} Truth is, the entire 62-day, 20.8\,GB Telecom Italia Big Data Challenge dataset (8,928 consecutive 10-minute intervals over 10,000 spatial cells) is handled, enforcing strict chronological splitting and train-only normalization to prevent temporal and spatial data leakage, on the whole.
+    \item \textbf{Engineered Architecture:} Plainly, a deep recurrent network including two is built stacked ConvLSTM layers paired with sinusoidal cyclical calendar encodings and a residual convolutional refinement prediction head, to a significant degree.
+    \item \textbf{Iterative Methodological Optimization:} We document the progression across the three full-scale training regimes, demonstrating how transition from min-max normalization to standard scaling and finally logarithmic variance-stabilizing transformation ($\log(1+x)$) overcomes gradient vanishing and reduces Mean Absolute Percentage Error (MAPE) by 11.7\%, in actual application.
+    \item \textbf{Comprehensive Benchmarking:} Our model is benchmarked against four baseline strategies, Persistence, Window Mean, Seasonal Daily, and Seasonal Weekly, showing statistically noticeable advancements across an out-of-distribution holiday test window, in many respects.
 \end{itemize}
 
 \section{Related Work}
 
 \subsection{Statistical and Classical Machine Learning Approaches}
-Early cellular traffic prediction studies utilized classical statistical models such as ARIMA, SARIMA, and Vector Auto-Regression (VAR) \cite{b3}, \cite{b6}. While mathematically tractable, these models assume linear Gaussian dynamics and cannot scale to high-dimensional spatial grids ($N = 10,000$). Support Vector Regression (SVR) and Random Forests introduced non-linear modeling capabilities but require extensive handcrafted feature engineering and struggle to preserve spatial continuity.
+Support Vector Regression (SVR) and Random Forests introduced non-linear modeling capabilities but need thorough handcrafted feature engineering and struggle to preserve spatial continuity, in actual application. Early cellular traffic prediction studies utilized classical statistical models such as ARIMA, SARIMA and Vector Auto-Regression (VAR) \cite{b3}, \cite{b6}; these models are postulating linear Gaussian dynamics and can't scale to high-dimensional spatial grids ($N = 10,000$), though mathematically manageable, in real-world scenarios.
 
 \subsection{Deep Learning for Spatial and Temporal Modeling}
-The advent of deep learning popularized two distinct paradigms:
+The advent of deep learning popularized two separate methods:
 \begin{itemize}
-    \item \textbf{Temporal Architectures:} Standard LSTMs \cite{b7} and Gated Recurrent Units (GRUs) effectively mitigate the vanishing gradient problem in long sequence modeling. However, applying them to spatial grids requires flattening $100 \times 100$ cells into a 10,000-dimensional vector, destroying spatial inductive biases and requiring tens of millions of fully connected weights.
-    \item \textbf{Spatial Architectures:} Deep CNN architectures (e.g., ST-ResNet \cite{b8}) process spatial grids by treating past time intervals as static stacked input channels. Although spatial neighborhoods are preserved, the temporal dynamics are collapsed into fixed convolutional filters without recurrent memory states.
+    \item \textbf{Temporal Architectures:} Standard LSTMs \cite{b7} and Gated Recurrent Units (GRUs) basically are easing the vanishing gradient roadblock in long sequence modeling, yet using them to spatial grids needs flattening $100 \times 100$ cells into a 10,000-dimensional vector, destroying spatial inductive biases and needing tens of millions of fully connected weights, on the whole.
+    \item \textbf{Spatial Architectures:} Deep CNN architectures (e.g., ST-ResNet \cite{b8}) process spatial grids by treating past time intervals as static stacked input channels, in actual application; even as spatial neighborhoods are preserved, the temporal dynamics are collapsed into the fixed convolutional filters without recurrent memory states, on the whole.
 \end{itemize}
 
 \subsection{Spatio-Temporal Recurrent Networks}
-The ConvLSTM framework \cite{b4} unified spatial convolutions with recurrent state transitions by replacing standard matrix multiplications in the LSTM cell with convolutional operators. Subsequent extensions include PredRNN \cite{b9}, which introduced zig-zag memory flow, and Graph Convolutional Networks (GCNs) combined with GRUs \cite{b10} for irregular sensor topologies. For uniformly discretized urban grids, ConvLSTM remains the gold standard owing to its spatial parameter sharing, translational equivariance, and computational efficiency.
+The ConvLSTM framework \cite{b4} integrated spatial convolutions with recurrent state transitions by replacing standard matrix multiplications in the LSTM cell with convolutional operators, broadly speaking; and thus, next extensions are encompassing PredRNN \cite{b9}, which introduced zig-zag memory flow, and Graph Convolutional Networks (GCNs) combined with GRUs \cite{b10} for irregular sensor topologies, to a significant degree. For uniformly discretized urban grids, ConvLSTM is remaining the gold standard owing to its spatial parameter sharing, translational equivariance, and computational efficiency.
 
 \subsection{Literature Gaps on the Telecom Italia Dataset}
-While numerous papers evaluate on the Telecom Italia Milan dataset \cite{b11}, \cite{b12}, many prior works exhibit critical methodological limitations:
+Even as numerous papers appraise on the Telecom Italia Milan dataset \cite{b11}, \cite{b12}, many prior works show critical methodological shortcomings:
 \begin{enumerate}
-    \item \textbf{Data Leakage:} Shuffling sliding windows randomly across the temporal horizon leaks future observations into the training set, artificially inflating accuracy.
-    \item \textbf{Spatial Sub-sampling:} Many studies restrict their evaluation to an arbitrary central $20 \times 20$ subgrid, bypassing peripheral cellular dynamics.
-    \item \textbf{Weak Baselines:} Failing to compare against the highly competitive Persistence baseline (predicting the latest observed frame), which is notoriously difficult to outperform in 10-minute short-term forecasting.
+    \item \textbf{Data Leakage:} Shuffling sliding windows randomly across the temporal horizon leaks future findings into the training set, artificially inflating precision, on the whole.
+    \item \textbf{Spatial Sub-sampling:} Many studies are restricting their check to an unspecified central $20 \times 20$ subgrid, bypassing minor cellular dynamics, in actual application.
+    \item \textbf{Weak Baselines:} Failing to compare against the highly competitive Persistence baseline (anticipating the latest gathered frame), which is notoriously difficult to outperform in 10-minute short-term forecasting, broadly speaking.
 \end{enumerate}
-Our work addresses each of these gaps systematically.
+Our work is tackling each of these gaps systematically.
 
 \section{Dataset and Problem Formulation}
 
 \subsection{Dataset Overview}
-The dataset is drawn from the Telecom Italia Big Data Challenge \cite{b11}, \cite{b12}, capturing telecommunications activity in Milan, Italy, from November 1, 2013 to January 1, 2014 (62 consecutive days). 
+The dataset is, of course, drawn from the Telecom Italia Big Data Challenge \cite{b11}, \cite{b12}, encapsulating telecommunications activity in Milan, Italy, from November 1, 2013 to January 1, 2014 (62 consecutive days), broadly speaking. 
 \begin{itemize}
-    \item \textbf{Spatial Discretization:} Milan is partitioned into a uniform $100 \times 100$ grid comprising $N = 10,000$ cells. Each cell spans approximately $235\text{ m} \times 235\text{ m}$. Cells are indexed from 1 to 10,000 in row-major order starting from the southwest corner:
+    \item \textbf{Spatial Discretization:} Milan is mainly partitioned into a consistent $100 \times 100$ grid including $N = 10,000$ cells. Each cell spans roughly $235\text{ m} \times 235\text{ m}$. Cells are typically indexed from 1 to 10,000 in row-major order starting from the southwest corner:
     \begin{align}
         \text{row} &= \lfloor (\text{CellID} - 1) / 100 \rfloor \\
         \text{col} &= (\text{CellID} - 1) \pmod{100}
     \end{align}
-    where $\text{row} = 0$ corresponds to the southern boundary and $\text{col} = 0$ corresponds to the western boundary.
-    \item \textbf{Temporal Granularity:} Data is aggregated into non-overlapping 10-minute intervals ($144\text{ steps/day}$). The 62-day duration spans $T = 8,928$ discrete time steps.
-    \item \textbf{Activity Channels:} The dataset tracks five communication modalities: SMS received (\texttt{smsin}), SMS sent (\texttt{smsout}), Calls received (\texttt{callin}), Calls made (\texttt{callout}), and Internet usage (\texttt{internet}). In this benchmark, we focus on cellular \texttt{internet} activity, which constitutes the highest network capacity burden.
+    where $\text{row} = 0$ is corresponding to the southern boundary. As, well, $\text{col} = 0$ is corresponding to the western boundary.
+    \item \textbf{Temporal Granularity:} Data is combined into non-overlapping 10-minute intervals ($144\text{ steps/day}$); in turn, the 62-day duration spans $T = 8,928$ discrete time steps, in real-world scenarios.
+    \item \textbf{Activity Channels:} The dataset is generally monitoring five communication modalities - SMS received (\texttt{smsin}), SMS sent (\texttt{smsout}), Calls received (\texttt{callin}), Calls made (\texttt{callout}), and Internet usage (\texttt{internet}), in real-world scenarios; in this benchmark, we center on cellular \texttt{internet} activity, which counts as the highest network capacity burden, broadly speaking.
 \end{itemize}
 
 \subsection{Data Engineering and Preprocessing Pipeline}
-The raw data consists of 62 uncompressed text files totaling 20.8\,GB. Preprocessing involves four vital transformations:
+The raw data consists of 62 uncompressed text files totaling 20.8\,GB. Preprocessing entails four vital transformations:
 \begin{enumerate}
-    \item \textbf{Country-Code Aggregation:} Raw records are partitioned by international country calling codes. We aggregate all inbound and outbound traffic per cell-interval tuple across all country codes to yield total localized cellular demand.
-    \item \textbf{Timezone Correction:} Raw timestamps are stored in UTC epoch milliseconds. Because human daily behavior aligns with local solar time, timestamps are converted to local Milan time (\texttt{Europe/Rome}, UTC+1 during winter). The first epoch corresponds to 2013-10-31 23:00 UTC, which correctly aligns with 2013-11-01 00:00 local time.
-    \item \textbf{Sparsity and Missing Value Semantics:} The dataset is stored as sparse transaction logs; a row exists only when activity was recorded. An absent record implies zero telecommunication events. Consequently, principled zero-filling is applied. Forward-filling would erroneously fabricate activity during prolonged periods of inactivity.
-    \item \textbf{Memory-Mapped Tensor Formulation:} The preprocessed data is compiled into a single contiguous float32 tensor of shape $(T, C, H, W) = (8928, 5, 100, 100)$ requiring 1.78\,GB of storage. Memory mapping (\texttt{numpy.memmap}) allows training batches to be streamed without saturating host memory.
+    \item \textbf{Country-Code Aggregation:} We total all inbound and outbound traffic per cell-interval tuple, across all country codes to produce total localized cellular demand, on the whole, and more, Raw entries are, in effect, partitioned by international country calling codes.
+    \item \textbf{Timezone Correction:} Raw timestamps are usually stored in UTC epoch milliseconds, and seeing that human daily behavior aligns with local solar time, timestamps are, by design, converted to local Milan time (\texttt{Europe/Rome}, UTC+1 during the winter), on the whole. The first epoch corresponds to 2013-10-31 23:00 UTC, which correctly lines up with 2013-11-01 00:00 local time, in many respects.
+    \item \textbf{Sparsity and Missing Value Semantics:} The dataset is stored as sparse transaction logs; and thus, a row exists only when activity was recorded. An absent record implies zero telecommunication events, and by extension principled zero-filling is applied, and activity would erroneously be fabricated by forward-filling during the prolonged periods of inactivity, in many respects.
+    \item \textbf{Memory-Mapped Tensor Formulation:} The preprocessed data is normally gathered into a single touching float32 tensor of shape $(T, C, H, W) = (8928, 5, 100, 100)$ needing 1.78\,GB of storage, to a significant degree; memory mapping (\texttt{numpy.memmap}) is allowing training batches to be streamed without flooding host memory, to a significant degree.
 \end{enumerate}
 
 \subsection{Chronological Partitioning and Leakage Prevention}
-To ensure rigorous real-world evaluation, the 8,928 time steps are partitioned chronologically into a 70/15/15 ratio:
+To ensure tough real-world evaluation, the 8,928 time steps are partitioned chronologically into a 70/15/15 ratio:
 \begin{itemize}
-    \item \textbf{Training Set:} 2013-11-01 00:00 to 2013-12-14 09:30 (6,249 time steps, yielding 6,243 sliding input-target pairs).
-    \item \textbf{Validation Set:} 2013-12-14 09:30 to 2013-12-23 16:40 (1,339 time steps, yielding 1,333 sliding pairs).
-    \item \textbf{Test Set:} 2013-12-23 16:40 to 2014-01-02 00:00 (1,340 time steps, yielding 1,334 sliding pairs).
+    \item \textbf{Training Set:} 2013-11-01 00:00 to 2013-12-14 09:30 (6,249 time steps, making 6,243 sliding input-target pairs).
+    \item \textbf{Validation Set:} 2013-12-14 09:30 to 2013-12-23 16:40 (1,339 time steps, creating 1,333 sliding pairs).
+    \item \textbf{Test Set:} 2013-12-23 16:40 to 2014-01-02 00:00 (1,340 time steps, creating 1,334 sliding pairs).
 \end{itemize}
-Crucially, sliding windows are strictly isolated within each partition boundary. Furthermore, statistical normalization parameters (mean, standard deviation, min, max) are fitted solely on the training segment to preclude any temporal leakage from validation or test periods.
+What's more, statistical normalization parameters (mean, standard departure, min, max) are fitted solely on the training segment to prevent any temporal leakage from validation or test periods, in real-world scenarios; in fact, what matters most is, sliding windows are rigorously cut off within each partition boundary.
 
 \subsection{Mathematical Problem Formulation}
-Let $\mathbf{X}_t \in \mathbb{R}^{C \times H \times W}$ represent the spatial traffic observation at time step $t$, where $H = 100$, $W = 100$, and $C$ is the number of input channels. Given an observation window of length $T_{\text{in}} = 6$ (corresponding to the preceding 60 minutes of traffic history):
+Let $\mathbf{X}_t \in \mathbb{R}^{C \times H \times W}$ represent the spatial traffic observation at time step $t$, where $H = 100$, $W = 100$, and $C$ is the number of input channels. Given an observation window of length $T_{\text{in}} = 6$ (relateding to the coming before 60 minutes of traffic history):
 \begin{equation}
     \boldsymbol{\mathcal{X}}_t = \left[ \mathbf{X}_{t-T_{\text{in}}+1}, \mathbf{X}_{t-T_{\text{in}}+2}, \dots, \mathbf{X}_t \right] \in \mathbb{R}^{T_{\text{in}} \times C \times H \times W}
 \end{equation}
-the forecasting task is to learn a parameterized mapping $f_{\boldsymbol{\theta}}$ that predicts the future traffic map at horizon $T_{\text{out}} = 1$ (the subsequent 10 minutes):
+the forecasting task is currently to learn a parameterized mapping $f_{\boldsymbol{\theta}}$ that projects the future traffic map at horizon $T_{\text{out}} = 1$ (the later 10 minutes):
 \begin{equation}
     \hat{\mathbf{Y}}_{t+1} = f_{\boldsymbol{\theta}}(\boldsymbol{\mathcal{X}}_t) \in \mathbb{R}^{1 \times 1 \times H \times W}
 \end{equation}
-such that the discrepancy between $\hat{\mathbf{Y}}_{t+1}$ and the ground truth $\mathbf{Y}_{t+1}$ is minimized across all active cells.
+Across all active cells, such that the mismatch between QLATEXz0000q and the ground truth QLATEXz0001q is minimized, to a significant degree.
 
 \section{Methodology and Architecture}
 
 \subsection{Cyclical Temporal Encodings}
-Short-term traffic series are heavily influenced by the hour of the day and day of the week. Because 1-hour sequences do not explicitly encode whether an ascending trend corresponds to the morning ramp-up (e.g., 08:00) or evening commute (e.g., 18:00), we synthesize four cyclical temporal feature planes. For each time step $t$, let $\tau(t) \in [0, 143]$ denote the 10-minute diurnal slot and $\omega(t) \in [0, 6]$ denote the day of the week. We compute:
+Short-term traffic series are heavily impacted by the hour of the day and day of the week. Per time step $t$, let $\tau(t) \in [0, 143]$ mean the 10-minute diurnal slot and $\omega(t) \in [0, 6]$ mean the day of the week. As 1-hour sequences don't clearly encode whether an ascending trend corresponds to the morning ramp-up (e.g., 08:00) or evening commute (e.g., 18:00), we combine four cyclical temporal feature planes. We compute:
 \begin{align}
     \phi_{1}(t) &= \sin\left(\frac{2\pi \tau(t)}{144}\right), & \phi_{2}(t) &= \cos\left(\frac{2\pi \tau(t)}{144}\right) \\
     \phi_{3}(t) &= \sin\left(\frac{2\pi \omega(t)}{7}\right), & \phi_{4}(t) &= \cos\left(\frac{2\pi \omega(t)}{7}\right)
 \end{align}
-Each scalar is broadcast across the spatial grid $(H, W)$ to create four continuous calendar planes, yielding an effective input tensor with $C_{\text{in}} = 1 + 4 = 5$ channels per time step.
+Across the spatial grid QLATEXz0000q, each scalar is broadcast to create four continuous calendar planes, basically tensing with QLATEXz0001q channels per time step, on the whole.
 
 \subsection{ConvLSTM Cell Formulation}
-In a standard LSTM cell, all internal state transitions and gate activations are computed via dense matrix multiplications. In contrast, the ConvLSTM cell \cite{b4} computes gate projections using 2D spatial convolution operators ($*$). Let $\mathbf{X}_t \in \mathbb{R}^{C_{\text{in}} \times H \times W}$ denote the input frame at time step $t$, $\mathbf{H}_{t-1} \in \mathbb{R}^{C_{\text{hid}} \times H \times W}$ denote the hidden state from the previous step, and $\mathbf{C}_{t-1} \in \mathbb{R}^{C_{\text{hid}} \times H \times W}$ denote the previous cell state. The gate updates are defined by:
+In a standard LSTM cell, all internal state transitions and gate activations are often computed via packed matrix multiplications. At the same time, the ConvLSTM cell \cite{b4} computes gate projections employing 2D spatial convolution operators ($*$). Let $\mathbf{X}_t \in \mathbb{R}^{C_{\text{in}} \times H \times W}$ mean the input frame at time step $t$, $\mathbf{H}_{t-1} \in \mathbb{R}^{C_{\text{hid}} \times H \times W}$ mean the hidden state from the previous step. What's more, $\mathbf{C}_{t-1} \in \mathbb{R}^{C_{\text{hid}} \times H \times W}$ mean the previous cell state. The gate changes are named by:
 \begin{align}
     \mathbf{i}_t &= \sigma\left( \mathbf{W}_{xi} * \mathbf{X}_t + \mathbf{W}_{hi} * \mathbf{H}_{t-1} + \mathbf{b}_i \right) \label{eq:input_gate} \\
     \mathbf{f}_t &= \sigma\left( \mathbf{W}_{xf} * \mathbf{X}_t + \mathbf{W}_{hf} * \mathbf{H}_{t-1} + \mathbf{b}_f \right) \label{eq:forget_gate} \\
@@ -186,25 +190,25 @@ In a standard LSTM cell, all internal state transitions and gate activations are
     \mathbf{C}_t &= \mathbf{f}_t \odot \mathbf{C}_{t-1} + \mathbf{i}_t \odot \mathbf{g}_t \label{eq:cell_update} \\
     \mathbf{H}_t &= \mathbf{o}_t \odot \tanh(\mathbf{C}_t) \label{eq:hidden_update}
 \end{align}
-where $\sigma(\cdot)$ denotes the element-wise sigmoid activation, $\odot$ represents the Hadamard (element-wise) product, and $*$ represents a 2D convolution with padding configured to preserve spatial dimensions ($H, W$). To optimize computational efficiency, the four convolutions are merged into a single convolutional operation with $4 \times C_{\text{hid}}$ output filters, followed by a channel split. The forget gate bias $\mathbf{b}_f$ is initialized to 1.0 to facilitate gradient propagation during early training epochs.
+where $\sigma(\cdot)$ means the element-wise sigmoid activation, $\odot$ represents the Hadamard (element-wise) product; as, well, $*$ represents a 2D convolution with padding arranged to preserve spatial dimensions ($H, W$), to a significant degree. To improve computational efficiency, the four convolutions are merged into a single convolutional operation with $4 \times C_{\text{hid}}$ output filters, followed by a channel split, in many respects; and thus, the forget gate bias $\mathbf{b}_f$ is set up to 1.0 to help gradient propagation during the early training epochs.
 
 \subsection{Overall Network Architecture}
-The comprehensive neural forecasting pipeline is depicted below:
+The comprehensive neural forecasting pipeline is portrayed below:
 \begin{enumerate}
     \item \textbf{Input Layer:} Accepts $\boldsymbol{\mathcal{X}}_t \in \mathbb{R}^{B \times 6 \times 5 \times 100 \times 100}$ (batch size $B$, 6 historical frames, 5 channels).
-    \item \textbf{ConvLSTM Layer 1:} 5 input channels $\rightarrow$ 64 hidden channels, $3 \times 3$ kernel, producing hidden state sequence $\mathbf{H}^{(1)}_{1:6} \in \mathbb{R}^{B \times 6 \times 64 \times 100 \times 100}$.
-    \item \textbf{ConvLSTM Layer 2:} 64 hidden channels $\rightarrow$ 64 hidden channels, $3 \times 3$ kernel. The final hidden state $\mathbf{H}^{(2)}_6 \in \mathbb{R}^{B \times 64 \times 100 \times 100}$ encodes the spatio-temporal summary of the preceding hour.
-    \item \textbf{Residual Prediction Head:} Rather than relying on a single linear projection, the final hidden state $\mathbf{H}^{(2)}_6$ passes through:
+    \item \textbf{ConvLSTM Layer 1:} 5 input channels $\rightarrow$ 64 hidden channels, $3 \times 3$ kernel, creating hidden state sequence $\mathbf{H}^{(1)}_{1:6} \in \mathbb{R}^{B \times 6 \times 64 \times 100 \times 100}$, in many respects.
+    \item \textbf{ConvLSTM Layer 2:} The final hidden state $\mathbf{H}^{(2)}_6 \in \mathbb{R}^{B \times 64 \times 100 \times 100}$ encodes the spatio-temporal summary of the coming before hour, and 64 hidden channels $\rightarrow$ 64 hidden channels, $3 \times 3$ kernel, in actual application.
+    \item \textbf{Residual Prediction Head:} Better yet than hinging on a single linear projection maybe, the final hidden state $\mathbf{H}^{(2)}_6$ passes through:
     \begin{itemize}
         \item A coarse $1 \times 1$ convolution: $64 \rightarrow 1$ channel ($\hat{\mathbf{Y}}_{\text{coarse}}$).
-        \item A non-linear spatial refinement block: the concatenation $[\hat{\mathbf{Y}}_{\text{coarse}} \,\|\, \mathbf{H}^{(2)}_6]$ (65 channels) is processed by a $3 \times 3$ convolution ($65 \rightarrow 32$ filters), a ReLU activation, and a second $3 \times 3$ convolution ($32 \rightarrow 1$ filter).
-        \item The residual correction is summed with $\hat{\mathbf{Y}}_{\text{coarse}}$ to yield the final forecast $\hat{\mathbf{Y}}_{t+1}$.
+        \item A non-linear spatial refinement block - the concatenation $[\hat{\mathbf{Y}}_{\text{coarse}} \,\|\, \mathbf{H}^{(2)}_6]$ (65 channels) is performed by a $3 \times 3$ convolution ($65 \rightarrow 32$ filters), a ReLU activation, and a second $3 \times 3$ convolution ($32 \rightarrow 1$ filter), in real-world scenarios.
+        \item The residual correction is typically summed with $\hat{\mathbf{Y}}_{\text{coarse}}$ to yield the final forecast $\hat{\mathbf{Y}}_{t+1}$.
     \end{itemize}
 \end{enumerate}
-The complete architecture contains exactly \textbf{473,506 trainable parameters}.
+The complete architecture includes exactly \textbf{473,506 trainable parameters}.
 
 \subsection{Loss Function and Optimization}
-All 10,000 grid cells exhibited non-zero activity during the training horizon; thus, an active cell binary mask $\mathbf{M} \in \{0, 1\}^{H \times W}$ incorporates all cells ($|\mathbf{M}| = 10,000$). The network is trained using masked Mean Squared Error (MSE) in normalized feature space:
+All 10,000 grid cells showed non-zero activity during the training horizon; so, an active cell binary mask $\mathbf{M} \in \{0, 1\}^{H \times W}$ includes all cells ($|\mathbf{M}| = 10,000$). The network is trained using masked Mean Squared Error (MSE) in normalized feature space:
 \begin{equation}
     \mathcal{L}(\hat{\mathbf{Y}}, \mathbf{Y}) = \frac{1}{|\mathbf{M}|} \sum_{h=1}^H \sum_{w=1}^W \mathbf{M}_{h,w} \left( \hat{\mathbf{Y}}_{h,w} - \mathbf{Y}_{h,w} \right)^2
 \end{equation}
@@ -213,16 +217,16 @@ Optimization details:
     \item \textbf{Optimizer:} Adam ($\beta_1 = 0.9, \beta_2 = 0.999$, initial learning rate $\eta = 10^{-3}$).
     \item \textbf{Learning Rate Schedule:} \texttt{ReduceLROnPlateau} monitoring validation loss (decay factor 0.5, patience 5 epochs, minimum LR $10^{-6}$).
     \item \textbf{Gradient Regularization:} Gradient norm clipping at threshold 1.0.
-    \item \textbf{Relative Early Stopping:} To prevent stagnation caused by negligible sub-decimal improvements, early stopping terminates training if validation loss fails to improve by at least $0.1\%$ relative ($\Delta_{\text{rel}} \ge 0.001$) for 10 consecutive epochs.
-    \item \textbf{Mixed Precision:} PyTorch automatic mixed precision (\texttt{torch.cuda.amp}) with dynamic gradient scaling on an NVIDIA Tesla T4 GPU.
+    \item \textbf{Relative Early Stopping:} To prevent stagnation caused by tiny sub-decimal improvements, early stopping terminates training if validation loss fails to improve by at least $0.1\%$ relative ($\Delta_{\text{rel}} \ge 0.001$) for 10 consecutive epochs, to a significant degree.
+    \item \textbf{Mixed Precision:} PyTorch automatic mixed precision (\texttt{torch.cuda.amp}) with dynamic gradient scaling on an NVIDIA Tesla T4 GPU, a graphics processor, to a significant degree.
 \end{itemize}
 
 \section{Experimental Progression and Setup}
 
 \subsection{Evolution Across Experimental Runs}
-To rigorously evaluate data representations and learning dynamics, three complete experimental runs were conducted on real Milano data (see Table~\ref{tab:runs}):
+To exactly gauge data representations and learning dynamics, three complete experimental runs were did on real Milano data (see Table~\ref{tab:runs}):
 \begin{itemize}
-    \item \textbf{Run 1 (Baseline Min-Max):} Standard min-max normalization to $[0, 1]$ on raw traffic values; single-channel input (no calendar features); standard early stopping.
+    \item \textbf{Run 1 (Baseline Min-Max):} Standard min-max normalization to $[0, 1]$ on raw traffic values; single-channel input (no calendar features); standard early stopping, broadly speaking.
     \item \textbf{Run 2 (Standardized + Calendar):} Standard z-score normalization ($\mu = 0, \sigma = 1$); four cyclical calendar channels added; relative early stopping.
     \item \textbf{Run 3 (Log-Standardized + Calendar, Proposed):} Variance-stabilizing logarithmic transformation $\tilde{x} = \log(1 + x)$ followed by z-score standardization; calendar features; relative early stopping.
 \end{itemize}
@@ -250,38 +254,38 @@ Hardware & Tesla T4 GPU & Tesla T4 GPU & Tesla T4 GPU \\
 \end{table}
 
 \subsection{Baseline Models for Comparison}
-To contextualize model skill, predictions are benchmarked against four representative baselines:
+To contextualize model skill, predictions are mainly benchmarked against four representative baselines:
 \begin{enumerate}
-    \item \textbf{Persistence Baseline:} Predicts that traffic in the next 10 minutes equals the latest observed frame: $\hat{\mathbf{Y}}_{t+1} = \mathbf{X}_t$. In short-term telecommunications forecasting, persistence is an exceptionally strong benchmark.
+    \item \textbf{Persistence Baseline:} Predicts that traffic in the next 10 minutes equals the latest gathered frame: $\hat{\mathbf{Y}}_{t+1} = \mathbf{X}_t$, so long story short-term telecommunications forecasting, storage is an exceptionally strong benchmark, on the whole.
     \item \textbf{Window Mean Baseline:} Predicts the arithmetic mean across all $T_{\text{in}} = 6$ historical frames: $\hat{\mathbf{Y}}_{t+1} = \frac{1}{6} \sum_{k=0}^5 \mathbf{X}_{t-k}$.
-    \item \textbf{Seasonal Daily Baseline:} Predicts traffic from the exact same time slot one day prior ($t - 144$ steps, 24 hours earlier).
-    \item \textbf{Seasonal Weekly Baseline:} Predicts traffic from the exact same time slot one week prior ($t - 1008$ steps, 7 days earlier).
+    \item \textbf{Seasonal Daily Baseline:} Predicts traffic from the exact same time slot one day prior ($t - 144$ steps, 24 hours earlier), to a significant degree.
+    \item \textbf{Seasonal Weekly Baseline:} Predicts traffic from the exact same time slot one week prior ($t - 1008$ steps, 7 days earlier), on the whole.
 \end{enumerate}
 
 \subsection{Evaluation Metrics}
-All evaluation metrics are computed strictly in original physical units (activity counts) after reversing normalization and logarithmic scaling. Negative predictions are clamped to zero. Let $y_{i,t}$ and $\hat{y}_{i,t}$ denote the true and predicted traffic for cell $i$ at test time step $t$, over $N = 10,000$ cells and $K = 1,334$ test evaluation windows ($M = N \times K \approx 13.34 \times 10^6$ evaluated predictions):
+All evaluation metrics are computed rigorously in original physical units (activity counts) after reversing normalization and logarithmic scaling. Negative predictions are clamped to zero. Let $y_{i,t}$ and $\hat{y}_{i,t}$ denote the true and predicted traffic for cell $i$ at test time step $t$, over $N = 10,000$ cells and $K = 1,334$ test evaluation windows ($M = N \times K \approx 13.34 \times 10^6$ found predictions):
 \begin{itemize}
     \item \textbf{Root Mean Square Error (RMSE):}
     \begin{equation}
         \text{RMSE} = \sqrt{\frac{1}{M} \sum_{t=1}^K \sum_{i=1}^N \left( \hat{y}_{i,t} - y_{i,t} \right)^2}
     \end{equation}
-    RMSE places heavy weight on large absolute discrepancies, making it sensitive to errors in peak city-center cells.
+    RMSE places heavy weight on large absolute differences, making it sensitive to deviations in peak city-center cells, in many respects.
     \item \textbf{Mean Absolute Error (MAE):}
     \begin{equation}
         \text{MAE} = \frac{1}{M} \sum_{t=1}^K \sum_{i=1}^N \left| \hat{y}_{i,t} - y_{i,t} \right|
     \end{equation}
-    MAE reflects the average magnitude of prediction error across all cells.
+    MAE reflects the average scale of prediction error across all cells.
     \item \textbf{Mean Absolute Percentage Error (MAPE):}
     \begin{equation}
         \text{MAPE} = \frac{100\%}{|\Omega|} \sum_{(i,t) \in \Omega} \frac{\left| \hat{y}_{i,t} - y_{i,t} \right|}{y_{i,t}}
     \end{equation}
-    where $\Omega = \{(i, t) \mid y_{i,t} > 1.0\}$. Filtering out negligible traffic instances ($y \le 1.0$) prevents numerical explosion caused by division by near-zero values.
+    where $\Omega = \{(i, t) \mid y_{i,t} > 1.0\}$. Filtering out tiny traffic instances ($y \le 1.0$) is preventing numerical explosion caused by division by near-zero values, broadly speaking.
 \end{itemize}
 
 \section{Results and Performance Analysis}
 
 \subsection{Quantitative Performance Comparison}
-Table~\ref{tab:results} summarizes the test performance of the proposed ConvLSTM against all baselines and preceding iterations.
+Table~\ref{tab:results} recaps the test performance of the suggested ConvLSTM against all baselines and coming before versions, in many respects.
 
 \begin{table*}[t]
 \caption{Test Set Metric Performance and Baseline Comparisons (Original Units)}
@@ -323,51 +327,51 @@ Seasonal Weekly (7d prior) & 57.0111 & 17.4023 & 40.558 & $-507.00\%$ (Worse) & 
 \label{fig:cell_timeseries}
 \end{figure}
 
-The proposed ConvLSTM (Run 3) achieves the best performance across all metrics. Key observations:
+The suggested ConvLSTM (Run 3) hits the best performance across all metrics. Key findings:
 \begin{enumerate}
-    \item \textbf{Superiority Over Persistence:} ConvLSTM outperforms persistence by \textbf{9.80\% in RMSE}, \textbf{12.79\% in MAE}, and \textbf{15.73\% in MAPE}. Because telecommunications traffic changes slowly over a single 10-minute step, persistence represents an extraordinarily stringent baseline. Beating it by double digits in MAE and MAPE confirms that the network extracts genuine spatial diffusion and temporal momentum rather than passively replicating the most recent observation.
-    \item \textbf{Window Mean Lags Trends:} The Window Mean baseline performs worse than Persistence (RMSE 10.3727 vs. 9.3922). Simple temporal averaging introduces a phase lag during periods of rapid traffic ramp-up or decay.
-    \item \textbf{Failure of Seasonal Baselines:} Seasonal Daily (RMSE 27.45) and Seasonal Weekly (RMSE 57.01) baselines exhibit massive error rates. The test period coincides with the Christmas and New Year holiday fortnight (Dec 23 to Jan 1), during which business districts emptied, university campuses closed, and holiday mobility diverged drastically from prior working weeks. The ConvLSTM successfully adapts to these anomalous holiday regimes because its 1-hour input captures instantaneous real-time conditions rather than relying rigidly on stale historical profiles.
+    \item \textbf{Superiority Over Persistence:} ConvLSTM outperforms storage by \textbf{9.80\% in RMSE}, \textbf{12.79\% in MAE}, and \textbf{15.73\% in MAPE}; in fact, retention represents an extraordinarily tough baseline, because telecommunications traffic changes slowly over a single 10-minute step, to a significant degree. Beating it by double digits in MAE and MAPE corroborates that the network pulls genuine spatial diffusion and temporal momentum rather than passively copying the most recent remark, on the whole.
+    \item \textbf{Window Mean Lags Trends:} The Window Mean baseline does worse than Storage (RMSE 10.3727 vs. 9.3922); during the periods of rapid traffic ramp-up or decay, elementary temporal averaging introduces a phase lag, in many respects.
+    \item \textbf{Failure of Seasonal Baselines:} Seasonal Daily (RMSE 27.45) and Seasonal Weekly (RMSE 57.01) baselines show heavy error rates, to a significant degree. The test period happens together with the Christmas and New Year holiday fortnight (Dec 23 to Jan 1), during the which business districts emptied, university campuses closed, to a significant degree. What's more, what's more, holiday mobility diverged drastically from prior working weeks. The ConvLSTM successfully is fitting to these unusual holiday regimes, because its 1-hour input represents instantaneous real-time conditions rather than counting rigidly on stale historical profiles.
 \end{enumerate}
 
 \subsection{Analysis of Convergence and Generalization}
-Fig.~\ref{fig:loss_curve} plots the training and validation loss progression normalized by the persistence error computed over each respective split. In Run 1, raw validation loss appeared lower than training loss (order $10^{-6}$), raising initial concerns of data leakage. However, domain analysis revealed that mid-December traffic is intrinsically smoother than November traffic; even the naive persistence baseline yields $1.64\times$ lower error during validation than during training. 
+Fig.~\ref{fig:loss_curve} plots the training and validation loss progression normalized by the persistence error computed over each respective split, in many respects; and thus, in Run 1, raw validation loss appeared lower than training loss (order $10^{-6}$), raising initial concerns of data leakage, broadly speaking. Still, domain analysis uncovered that mid-December traffic is intrinsically smoother than November traffic; even the naive persistence baseline yields $1.64\times$ lower deviation during the validation than during the training. 
 
-By scaling training and validation losses by their respective split-specific persistence baselines, Fig.~\ref{fig:loss_curve} demonstrates that:
+By scaling training and validation losses by their respective split-specific persistence baselines, Fig.~\ref{fig:loss_curve} suggests that:
 \begin{itemize}
-    \item Both training and validation curves track almost identically, reaching $0.688\times$ and $0.700\times$ persistence loss at the best epoch (epoch 35).
-    \item The absence of a divergence gap between normalized training and validation loss provides empirical proof that the architecture generalizes stably without overfitting.
+    \item Both training and validation curves are tracking almost identically, reaching $0.688\times$ and $0.700\times$ persistence loss at the best epoch (epoch 35), in real-world scenarios.
+    \item The absence of a divergence gap between normalized training and validation loss is offering empirical proof that the architecture generalizes stably without overfitting, to a significant degree.
 \end{itemize}
 
 \subsection{Ablation: The Impact of Logarithmic Scaling}
-A central finding of this investigation is the role of variance-stabilizing normalization:
+A central finding of this study is the function of variance-stabilizing normalization:
 \begin{itemize}
-    \item In Run 1, min-max scaling squeezed over 95\% of cell activities near 0 due to extreme peak outliers in the city center. This reduced the MSE training loss to $\approx 6 \times 10^{-6}$, starving the optimizer of strong gradient feedback.
-    \item In Run 2, standard $z$-score scaling restored gradients ($\text{loss} \approx 10^{-2}$) and allowed \texttt{ReduceLROnPlateau} to function effectively. However, test RMSE rose slightly from 8.4745 to 8.6032.
-    \item In Run 3, applying $\log(1+x)$ prior to standardization produced the definitive breakthrough. Cellular traffic exhibits a heavy right tail (log-normal characteristics). The logarithmic transformation compresses high-magnitude dynamic ranges and emphasizes relative percentage errors across peripheral and suburban cells. Consequently, MAPE dropped from 11.987\% (Run 1) and 12.319\% (Run 2) to \textbf{10.585\% (Run 3)}---a relative percentage accuracy improvement of \textbf{11.7\%} with no degradation in RMSE.
+    \item Min-max scaling squeezed over 95\% of cell activities near 0 due to extreme peak outliers in the city center in Run 1; this lowered the MSE training loss to $\approx 6 \times 10^{-6}$, starving the optimizer of strong gradient feedback, in real-world scenarios.
+    \item In Run 2, standard $z$-score scaling restored gradients ($\text{loss} \approx 10^{-2}$) and permitted \texttt{ReduceLROnPlateau} to function basically, yet test RMSE rose slightly from 8.4745 to 8.6032, to a significant degree.
+    \item Employing $\log(1+x)$ before standardization created the final breakthrough in Run 3; and thus, a heavy right tail (log-normal traits) is being shown by cellular traffic. That's why, mAPE dropped from 11.987\% (Run 1) and 12.319\% (Run 2) to \textbf{10.585\% (Run 3)}---a relative percentage accuracy improvement of \textbf{11.7\%} with no breaking down in RMSE, in real-world scenarios, and the logarithmic transformation compresses high-magnitude dynamic ranges and stresses relative percentage errors, across the minor and suburban cells, in real-world scenarios.
 \end{itemize}
 
 \subsection{Spatial and Temporal Qualitative Inspection}
-Fig.~\ref{fig:heatmaps} illustrates the spatial fidelity of the predicted traffic maps against ground truth across three distinct test timestamps. The ConvLSTM captures the global structure of Milan: the dense core around the Duomo, secondary traffic nodes around the Porta Garibaldi and Centrale railway stations, and major ring roads. The absolute error maps confirm that prediction residuals are confined primarily to extreme central peaks, while peripheral suburban neighborhoods exhibit near-zero residual variance.
+Fig.~\ref{fig:heatmaps} Across the three separate test timestamps, shows the spatial fidelity of the projected traffic maps against ground truth, in many respects; and thus, the ConvLSTM represents the global arrangement of Milan, including the thick core around the Duomo, secondary traffic nodes around the Porta Garibaldi and Centrale railway stations, and major ring roads, in actual application. At the moment, near-zero residual variance is being exhibited by minor suburban neighborhoods; the absolute error maps are verifying that prediction residuals are confined mostly to extreme central peaks.
 
-Fig.~\ref{fig:cell_timeseries} examines the temporal tracking performance on Cell ID 4128 (a bustling urban cell) through New Year's Eve 2013. While the persistence baseline constantly lags behind rapid inflection points by exactly one time step, the ConvLSTM smoothly filters out stochastic single-step noise and tracks diurnal inflection peaks accurately.
+Fig.~\ref{fig:cell_timeseries} studies the temporal tracking performance on Cell ID 4128 (a busy urban cell), through New Year's Eve 2013, in real-world scenarios; while, the persistence baseline constantly lags behind rapid inflection points by exactly one time step probably, stochastic single-step noise is smoothly filtered out by the ConvLSTM and tracks diurnal inflection peaks accurately, in real-world scenarios.
 
 \section{Engineering Considerations and Lessons Learned}
-Scaling deep spatio-temporal models to 20\,GB telecommunications datasets under constrained compute environments presents significant systems challenges:
+Scaling deep spatio-temporal models to 20\,GB telecommunications datasets under the shackled compute environments introduces noticeable systems challenges:
 \begin{enumerate}
-    \item \textbf{Out-of-Core Preprocessing:} Memory-mapping the $(8928, 5, 100, 100)$ tensor via \texttt{numpy.memmap} eliminated out-of-memory crashes on host systems with limited RAM, allowing PyTorch multi-process workers to stream slices on demand.
-    \item \textbf{Time Budget and Resumption:} Under Kaggle's 12-hour session limit, a time-budget monitor halts training gracefully at 8.5 hours, serializing \texttt{last\_checkpoint.pt} to guarantee evaluation execution and enable multi-session continuation.
-    \item \textbf{Relative Early Stopping Threshold:} Relying on raw floating-point loss improvements kept Run 1 active for 10 redundant epochs due to negligible fluctuations in the 7th decimal place. Enforcing a relative threshold ($\Delta_{\text{rel}} \ge 0.1\%$) shortened training time by 28 minutes while yielding superior final weights.
+    \item \textbf{Out-of-Core Preprocessing:} Memory-mapping the $(8928, 5, 100, 100)$ tensor via \texttt{numpy.memmap} discarded out-of-memory crashes on host systems with restricted RAM, system memory, allowing PyTorch multi-process workers to stream slices on demand, to a significant degree.
+    \item \textbf{Time Budget and Resumption:} Under Kaggle's 12-hour session limit, a time-budget monitor halts training gracefully at 8.5 hours, packing \texttt{last\_checkpoint.pt} to guarantee evaluation execution and allow multi-session continuation, in real-world scenarios.
+    \item \textbf{Relative Early Stopping Threshold:} Enforcing a relative threshold ($\Delta_{\text{rel}} \ge 0.1\%$) shortened training time by 28 minutes while creating superior final weights, in actual application; indeed, counting on raw floating-point loss improvements kept Run 1 active for 10 unnecessary epochs due to tiny changes in the 7th decimal place, to a significant degree.
 \end{enumerate}
 
 \section{Conclusion and Future Work}
-In this work, we developed and benchmarked a Spatio-Temporal Convolutional LSTM network for short-term cellular internet traffic forecasting across the entire metropolitan area of Milan. By combining a two-layer ConvLSTM backbone with cyclical calendar encodings, a residual convolutional head, and logarithmic variance stabilization, the proposed architecture predicts city-wide cellular demand 10 minutes ahead with an RMSE of 8.4722, MAE of 3.7802, and MAPE of 10.585\%. The model outperforms the formidable persistence baseline by 9.8\% in RMSE and 15.7\% in MAPE during an anomalous holiday test period, demonstrating robust generalization without data leakage.
+Here, we worked out and benchmarked a Spatio-Temporal Convolutional LSTM network for short-term cellular internet traffic forecasting, across the entire metropolitan domain of Milan, in many respects. By combining a two-layer ConvLSTM backbone with cyclical calendar encodings, a residual convolutional head, and logarithmic variance stabilization, the suggested architecture projects city-wide cellular demand 10 minutes ahead with an RMSE of 8.4722, MAE of 3.7802, and MAPE of 10.585\%, in actual application; the model outperforms the impressive persistence baseline by 9.8\% in RMSE and 15.7\% in MAPE during an unusual holiday test period, showing solid generalization without data leakage.
 
-Future extensions will explore:
+Future extensions will check out:
 \begin{itemize}
-    \item \textbf{Multi-Horizon Sequence-to-Sequence:} Incorporating an encoder-decoder ConvLSTM structure to forecast multiple time steps ahead ($T_{\text{out}} \in \{3, 6, 12\}$) without recursive error compounding.
-    \item \textbf{Multimodal Feature Fusion:} Leveraging SMS and telephony activity channels as cross-modal covariates to predict internet surges.
-    \item \textbf{Graph Wavelet Networks:} Comparing regular grid convolutions with graph-based message passing conditioned on the irregular Voronoi geometries of real-world cell towers.
+    \item \textbf{Multi-Horizon Sequence-to-Sequence:} Including an encoder-decoder ConvLSTM architecture to forecast multiple time steps ahead ($T_{\text{out}} \in \{3, 6, 12\}$) without recursive error compounding, in many respects.
+    \item \textbf{Multimodal Feature Fusion:} Using SMS and telephony activity channels as cross-modal covariates to anticipate internet surges.
+    \item \textbf{Graph Wavelet Networks:} Checking regular grid convolutions with graph-based message passing restricted on the irregular Voronoi geometries of real-world cell towers, broadly speaking.
 \end{itemize}
 
 \begin{thebibliography}{00}
