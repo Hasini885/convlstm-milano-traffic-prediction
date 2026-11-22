@@ -1,0 +1,75 @@
+\relax 
+\citation{b1}
+\citation{b2}
+\citation{b3}
+\citation{b4}
+\citation{b5}
+\@writefile{toc}{\contentsline {section}{\numberline {I}Introduction}{1}{}\protected@file@percent }
+\citation{b3}
+\citation{b6}
+\citation{b7}
+\citation{b8}
+\citation{b4}
+\citation{b9}
+\citation{b10}
+\citation{b11}
+\citation{b12}
+\citation{b11}
+\citation{b12}
+\@writefile{toc}{\contentsline {section}{\numberline {II}Related Work}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-A}}Statistical and Classical Machine Learning Approaches}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-B}}Deep Learning for Spatial and Temporal Modeling}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-C}}Spatio-Temporal Recurrent Networks}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-D}}Literature Gaps on the Telecom Italia Dataset}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {III}Dataset and Problem Formulation}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-A}}Dataset Overview}{2}{}\protected@file@percent }
+\citation{b4}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-B}}Data Engineering and Preprocessing Pipeline}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-C}}Chronological Partitioning and Leakage Prevention}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-D}}Mathematical Problem Formulation}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {IV}Methodology and Architecture}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-A}}Cyclical Temporal Encodings}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-B}}ConvLSTM Cell Formulation}{3}{}\protected@file@percent }
+\newlabel{eq:input_gate}{{7}{3}{}{equation.7}{}}
+\newlabel{eq:forget_gate}{{8}{3}{}{equation.8}{}}
+\newlabel{eq:output_gate}{{9}{3}{}{equation.9}{}}
+\newlabel{eq:candidate_gate}{{10}{3}{}{equation.10}{}}
+\newlabel{eq:cell_update}{{11}{3}{}{equation.11}{}}
+\newlabel{eq:hidden_update}{{12}{3}{}{equation.12}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-C}}Overall Network Architecture}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-D}}Loss Function and Optimization}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {V}Experimental Progression and Setup}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-A}}Evolution Across Experimental Runs}{4}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces System Configurations Across the Three Experimental Runs}}{4}{}\protected@file@percent }
+\newlabel{tab:runs}{{I}{4}{}{table.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-B}}Baseline Models for Comparison}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-C}}Evaluation Metrics}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {VI}Results and Performance Analysis}{5}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-A}}Quantitative Performance Comparison}{5}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Training and validation loss per epoch for the final model (Run 3), normalized relative to the Persistence baseline error evaluated on the identical split. Both curves rapidly drop below 1.0 (indicating immediate superiority over persistence) and converge near $0.69\times $--$0.70\times $ persistence loss without overfitting.}}{5}{}\protected@file@percent }
+\newlabel{fig:loss_curve}{{1}{5}{}{figure.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-B}}Analysis of Convergence and Generalization}{5}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-C}}Ablation: The Impact of Logarithmic Scaling}{5}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-D}}Spatial and Temporal Qualitative Inspection}{5}{}\protected@file@percent }
+\bibcite{b1}{1}
+\bibcite{b2}{2}
+\bibcite{b3}{3}
+\bibcite{b4}{4}
+\bibcite{b5}{5}
+\bibcite{b6}{6}
+\bibcite{b7}{7}
+\bibcite{b8}{8}
+\bibcite{b9}{9}
+\bibcite{b10}{10}
+\bibcite{b11}{11}
+\bibcite{b12}{12}
+\@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces Test Set Metric Performance and Baseline Comparisons (Original Units)}}{6}{}\protected@file@percent }
+\newlabel{tab:results}{{II}{6}{}{table.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {VII}Engineering Considerations and Lessons Learned}{6}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {VIII}Conclusion and Future Work}{6}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{References}{6}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Spatial verification across Milan at three distinct test evaluation timestamps (2013-12-27 19:10, 2013-12-29 19:00, and 2013-12-30 21:20). Columns display Ground Truth traffic, ConvLSTM prediction, and Absolute Error maps. Coordinates represent the $100 \times 100$ grid with north at the top.}}{7}{}\protected@file@percent }
+\newlabel{fig:heatmaps}{{2}{7}{}{figure.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Continuous 1-step-ahead prediction time series for high-activity urban cell ID 4128 across the final three days of the test horizon (December 30, 2013 to January 1, 2014), tracking ground truth (blue), ConvLSTM prediction (orange), and Persistence (green).}}{7}{}\protected@file@percent }
+\newlabel{fig:cell_timeseries}{{3}{7}{}{figure.3}{}}
+\gdef \@abspage@last{7}
